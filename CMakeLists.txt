@@ -24,7 +24,7 @@ set(LIB_NAME ${PROJECT_NAME})
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 list(FILTER SOURCES EXCLUDE REGEX ".*/.*build.*/.*")
 list(FILTER SOURCES EXCLUDE REGEX ".*/main\\.cpp$")
-list(FILTER SOURCES EXCLUDE REGEX ".*/external/imgui/.*")
+list(FILTER SOURCES EXCLUDE REGEX ".*/external/.*")
 
 # render library
 add_library(${LIB_NAME} STATIC ${SOURCES})
@@ -61,8 +61,10 @@ target_link_libraries(${LIB_NAME} PUBLIC glfw)
 find_package(glm REQUIRED)
 target_link_libraries(${LIB_NAME} PUBLIC glm::glm)
 
-# linking obj loader
-target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/obj/)
+# tinyobjloader library
+add_library(tinyobjloader STATIC ${CMAKE_CURRENT_SOURCE_DIR}/external/tinyobjloader/tiny_obj_loader.cc)
+target_include_directories(tinyobjloader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/tinyobjloader)
+target_link_libraries(${LIB_NAME} PUBLIC tinyobjloader)
 
 # if standalone app
 if(DEFINED PROJECT_IS_TOP_LEVEL)
