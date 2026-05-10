@@ -8,7 +8,7 @@ namespace BulletRender {
 namespace render {
 
 Lines::Lines(float thicknessPx) : m_thickness(thicknessPx) {
-    m_prog = std::make_shared<Shader>(LINES_VERT_PATH, LINES_FRAG_PATH);
+    m_prog = std::make_shared<GraphicsShader>(LINES_VERT_PATH, LINES_FRAG_PATH);
     ensureGpu_();
 }
 

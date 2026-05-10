@@ -36,7 +36,7 @@ public:
     void render(const scene::Scene& scene) override;
 
 private:
-    std::shared_ptr<Shader> m_prog;
+    std::shared_ptr<GraphicsShader> m_prog;
     bool m_enabled = true;
     float m_fogStart = 5.0f;
     float m_fogEnd = 50.0f;

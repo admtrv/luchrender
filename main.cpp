@@ -44,7 +44,7 @@ int main()
 
     // assets
     scene::Model model("assets/models/fox.obj");
-    std::shared_ptr<render::Shader> shader = std::make_shared<render::Shader>(
+    std::shared_ptr<render::GraphicsShader> shader = std::make_shared<render::GraphicsShader>(
         "assets/shaders/normal.vert.glsl",
         "assets/shaders/normal.frag.glsl"
     );

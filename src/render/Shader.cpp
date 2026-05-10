@@ -4,10 +4,25 @@
 
 #include "Shader.h"
 
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
 namespace BulletRender {
 namespace render {
 
-std::string readFile(const std::string& path)
+// base shader
+
+Shader::~Shader()
+{
+    if (m_id)
+    {
+        glDeleteProgram(m_id);
+        m_id = 0;
+    }
+}
+
+std::string Shader::readFile(const std::string& path)
 {
     std::ifstream file(path, std::ios::binary);
     if (!file)
@@ -21,7 +36,7 @@ std::string readFile(const std::string& path)
 }
 
 // compile shader of type
-unsigned compile(GLenum type, const char* src)
+unsigned Shader::compileStage(GLenum type, const char* src, const std::string& tag)
 {
     unsigned shader = glCreateShader(type);
     glShaderSource(shader, 1, &src, nullptr);
@@ -38,36 +53,45 @@ unsigned compile(GLenum type, const char* src)
         std::string log(size, '\0');
         glGetShaderInfoLog(shader, size, nullptr, log.data());
 
-        std::cerr << "shader compile error: " << log << "\n";
+        std::cerr << "shader compile error (" << tag << "): " << log << "\n";
+
+        glDeleteShader(shader);
+        return 0;
     }
 
     return shader;
 }
 
-bool Shader::loadFromFiles(const std::string& vertPath, const std::string& fragPath)
+bool Shader::linkProgram(std::initializer_list<unsigned> stages)
 {
-    std::string vertString = readFile(vertPath);
-    std::string fragString = readFile(fragPath);
-
-    if (vertString.empty() || fragString.empty())
+    // any stage failed to compile
+    for (unsigned s : stages)
     {
-        std::cerr << "cannot read " << vertPath << " or " << fragPath << "\n";
-        return false;
+        if (s == 0)
+        {
+            for (unsigned cleanup : stages)
+            {
+                if (cleanup)
+                {
+                    glDeleteShader(cleanup);
+                }
+            }
+            return false;
+        }
     }
 
-    unsigned vertexShader = compile(GL_VERTEX_SHADER,   vertString.c_str());
-    unsigned fragmentShader = compile(GL_FRAGMENT_SHADER, fragString.c_str());
-
     m_id = glCreateProgram();
-    glAttachShader(m_id, vertexShader);
-    glAttachShader(m_id, fragmentShader);
+    for (unsigned s : stages)
+    {
+        glAttachShader(m_id, s);
+    }
     glLinkProgram(m_id);
 
     int ok = 0;
     glGetProgramiv(m_id, GL_LINK_STATUS, &ok);
 
-    if (!ok) {
-
+    if (!ok)
+    {
         int size = 0;
         glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &size);
 
@@ -80,18 +104,12 @@ bool Shader::loadFromFiles(const std::string& vertPath, const std::string& fragP
         m_id = 0;
     }
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    for (unsigned s : stages)
+    {
+        glDeleteShader(s);
+    }
 
     return m_id != 0;
-}
-
-Shader::~Shader()
-{
-    if (m_id)
-    {
-        glDeleteProgram(m_id);
-    }
 }
 
 void Shader::bind() const
@@ -114,9 +132,9 @@ void Shader::setVec3(const char* name, const glm::vec3& vec) const
     glUniform3fv(uniformLoc(name), 1, &vec.x);
 }
 
-void Shader::setFloat(const char* name, float vec) const
+void Shader::setFloat(const char* name, float val) const
 {
-    glUniform1f(uniformLoc(name), vec);
+    glUniform1f(uniformLoc(name), val);
 }
 
 void Shader::setInt(const char* name, int val) const
@@ -124,6 +142,61 @@ void Shader::setInt(const char* name, int val) const
     glUniform1i(uniformLoc(name), val);
 }
 
+// graphics shader
+
+GraphicsShader::GraphicsShader(const std::string& vertPath, const std::string& fragPath)
+{
+    loadFromFiles(vertPath, fragPath);
+}
+
+bool GraphicsShader::loadFromFiles(const std::string& vertPath, const std::string& fragPath)
+{
+    std::string vertString = readFile(vertPath);
+    std::string fragString = readFile(fragPath);
+
+    if (vertString.empty() || fragString.empty())
+    {
+        std::cerr << "cannot read " << vertPath << " or " << fragPath << "\n";
+        return false;
+    }
+
+    unsigned vertexShader = compileStage(GL_VERTEX_SHADER, vertString.c_str(), vertPath);
+    unsigned fragmentShader = compileStage(GL_FRAGMENT_SHADER, fragString.c_str(), fragPath);
+
+    return linkProgram({vertexShader, fragmentShader});
+}
+
+// compute shader
+
+ComputeShader::ComputeShader(const std::string& compPath)
+{
+    loadFromFile(compPath);
+}
+
+bool ComputeShader::loadFromFile(const std::string& compPath)
+{
+    std::string compString = readFile(compPath);
+
+    if (compString.empty())
+    {
+        std::cerr << "cannot read " << compPath << "\n";
+        return false;
+    }
+
+    unsigned computeStage = compileStage(GL_COMPUTE_SHADER, compString.c_str(), compPath);
+
+    return linkProgram({computeStage});
+}
+
+void ComputeShader::dispatch(unsigned groupsX, unsigned groupsY, unsigned groupsZ) const
+{
+    glDispatchCompute(groupsX, groupsY, groupsZ);
+}
+
+void ComputeShader::memoryBarrier(GLbitfield bits) const
+{
+    glMemoryBarrier(bits);
+}
 
 } // namespace render
 } // namespace BulletRender

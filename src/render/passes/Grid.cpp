@@ -11,7 +11,7 @@ namespace BulletRender {
 namespace render {
 
 Grid::Grid(bool enabled) : m_enabled(enabled) {
-    m_prog = std::make_shared<Shader>(VERT_PATH, FRAG_PATH);
+    m_prog = std::make_shared<GraphicsShader>(VERT_PATH, FRAG_PATH);
     glGenVertexArrays(1, &m_Vao);
 }
 

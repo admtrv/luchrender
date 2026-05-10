@@ -41,7 +41,7 @@ private:
     void ensureGpu_();
     void clearCpu_();
 
-    std::shared_ptr<Shader> m_prog;
+    std::shared_ptr<GraphicsShader> m_prog;
     GLuint m_Vao = 0;
     GLuint m_Vbo = 0;
 

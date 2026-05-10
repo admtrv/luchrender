@@ -27,7 +27,7 @@ public:
     void render(const scene::Scene& scene) override;
 
 private:
-    std::shared_ptr<Shader> m_prog;
+    std::shared_ptr<GraphicsShader> m_prog;
     bool m_enabled = true;
     GLuint m_Vao = 0;
 };

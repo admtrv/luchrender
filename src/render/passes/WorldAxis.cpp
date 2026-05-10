@@ -14,7 +14,7 @@ namespace render {
 
 WorldAxis::WorldAxis(bool enabled) : m_enabled(enabled)
 {
-    m_prog = std::make_shared<Shader>(AXIS_VERT_PATH, AXIS_FRAG_PATH);
+    m_prog = std::make_shared<GraphicsShader>(AXIS_VERT_PATH, AXIS_FRAG_PATH);
     glGenVertexArrays(1, &m_Vao);
 }
 
