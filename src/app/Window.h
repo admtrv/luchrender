@@ -20,10 +20,11 @@ struct WindowConfig {
     int height;
     std::string title;
     bool resizable;
-    bool vsync;         // 1 - vsync on, 0 - vsync off (unlimited fps)
+    bool vsync;             // 1 - vsync on, 0 - vsync off (unlimited fps)
+    bool preferHighPerfGpu; // hint drivers to pick discrete GPU on hybrid systems
 
-    explicit WindowConfig(int w = 800, int h = 600, std::string t = "BulletRender", bool r = true, bool v = false)
-        : width(w), height(h), title(std::move(t)), resizable(r), vsync(v) {}
+    explicit WindowConfig(int w = 800, int h = 600, std::string t = "BulletRender", bool r = true, bool v = false, bool hp = true)
+        : width(w), height(h), title(std::move(t)), resizable(r), vsync(v), preferHighPerfGpu(hp) {}
 };
 
 class Window {

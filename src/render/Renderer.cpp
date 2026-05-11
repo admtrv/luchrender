@@ -22,6 +22,10 @@ void Renderer::init(const RenderConfig& cfg)
     int width, height;
     app::Window::getSize(width, height);
     s_sceneFbo = std::make_unique<FrameBuffer>(width, height);
+
+    std::cout << "GL vendor:   " << glGetString(GL_VENDOR)   << "\n";
+    std::cout << "GL renderer: " << glGetString(GL_RENDERER) << "\n";
+    std::cout << "GL version:  " << glGetString(GL_VERSION)  << "\n";
 }
 
 void Renderer::clear(float r, float g, float b, float a)

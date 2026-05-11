@@ -4,8 +4,29 @@
 
 #include "Window.h"
 
+#include <cstdlib>
+
+// Windows: exported symbols pick the discrete GPU on hybrid systems
+#ifdef _WIN32
+extern "C" {
+    __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
+    __declspec(dllexport) int           AmdPowerXpressRequestHighPerformance = 1;
+}
+#endif
+
 namespace BulletRender {
 namespace app {
+
+// Linux: env hints PRIME offload / Mesa to use the discrete GPU
+static void preferHighPerfGpuHint()
+{
+#ifndef _WIN32
+    setenv("__NV_PRIME_RENDER_OFFLOAD", "1", 0);
+    setenv("__GLX_VENDOR_LIBRARY_NAME", "nvidia", 0);
+    setenv("__VK_LAYER_NV_optimus",     "NVIDIA_only", 0);
+    setenv("DRI_PRIME",                 "1", 0);
+#endif
+}
 
 GLFWwindow *Window::s_Window = nullptr;
 double Window::s_scrollAccum = 0.0;
@@ -24,6 +45,11 @@ double Window::consumeScrollDelta()
 
 bool Window::init(const WindowConfig& cfg)
 {
+    if (cfg.preferHighPerfGpu)
+    {
+        preferHighPerfGpuHint();
+    }
+
     if (!glfwInit())
     {
         std::cerr << "Failed to initialize GLFW\n";
