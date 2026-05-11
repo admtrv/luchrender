@@ -8,9 +8,11 @@
 #include "render/passes/Grid.h"
 #include "render/passes/Lines.h"
 #include "render/passes/Fog.h"
+#include "render/passes/SkyBox.h"
 #include "render/Renderer.h"
 #include "render/Shader.h"
 #include "render/textures/TextureLoader.h"
+#include "render/textures/CubeMap.h"
 #include "scene/Scene.h"
 #include "scene/Model.h"
 #include "scene/Camera.h"
@@ -52,6 +54,21 @@ int main()
         "assets/shaders/normal.frag.glsl"
     );
 
+/*
+    std::shared_ptr<render::CubeMap> sky = std::make_shared<render::CubeMap>(std::array<std::string, 6>{
+        "assets/textures/skybox/right.jpg",
+        "assets/textures/skybox/left.jpg",
+        "assets/textures/skybox/top.jpg",
+        "assets/textures/skybox/bottom.jpg",
+        "assets/textures/skybox/front.jpg",
+        "assets/textures/skybox/back.jpg"
+    });
+
+    // skybox
+    auto skybox = std::make_shared<render::SkyBox>(sky);
+    render::Renderer::registerPrePass(skybox);
+*/
+
     // scene
     scene::Scene scene;
 
@@ -78,7 +95,7 @@ int main()
     backpackTexture->getMaterial().setShader(shader);
     backpackTexture->getTransform().setPosition({5.0f, 1.5f, 0.0f});
 
-    auto metalTexture = render::TextureLoader::instance().load("assets/models/teapot/metal.jpg");
+    auto metalTexture = render::TextureLoader::instance().load("assets/textures/metal.jpg");
     scene::SceneObject* teapotFileTexture = scene.addObject(&teapotModel);
     teapotFileTexture->getMaterial().setShader(shader);
     teapotFileTexture->getMaterial().setTexture("uAlbedo", metalTexture, 0);

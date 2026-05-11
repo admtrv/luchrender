@@ -29,6 +29,11 @@ public:
     virtual float far() const = 0;
     virtual glm::vec3 position() const = 0;
 
+    // orientation basis derived from view() (transpose of upper 3x3)
+    virtual glm::vec3 forward() const;
+    virtual glm::vec3 right() const;
+    virtual glm::vec3 up() const;
+
     virtual void update(GLFWwindow* win, float dt) {}
 };
 

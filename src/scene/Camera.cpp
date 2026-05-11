@@ -11,6 +11,27 @@
 namespace BulletRender {
 namespace scene {
 
+// Camera
+
+// view() is lookAt(pos, target, worldUp) -> upper-left 3x3 is the camera basis as rows
+glm::vec3 Camera::forward() const
+{
+    glm::mat4 v = view();
+    return -glm::vec3(v[0][2], v[1][2], v[2][2]);
+}
+
+glm::vec3 Camera::right() const
+{
+    glm::mat4 v = view();
+    return glm::vec3(v[0][0], v[1][0], v[2][0]);
+}
+
+glm::vec3 Camera::up() const
+{
+    glm::mat4 v = view();
+    return glm::vec3(v[0][1], v[1][1], v[2][1]);
+}
+
 // StaticCamera
 
 glm::mat4 StaticCamera::view() const
