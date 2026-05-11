@@ -10,6 +10,7 @@
 #include "render/passes/Fog.h"
 #include "render/Renderer.h"
 #include "render/Shader.h"
+#include "render/textures/TextureLoader.h"
 #include "scene/Scene.h"
 #include "scene/Model.h"
 #include "scene/Camera.h"
@@ -27,7 +28,7 @@ int main()
     }
 
     // renderer
-    render::RenderConfig renderCfg{{0.05f, 0.05f, 0.08f, 1.0f}};
+    render::RenderConfig renderCfg{{0.0f, 0.0f, 0.0f, 1.0f}};
     render::Renderer::init(renderCfg);
 
     // grid
@@ -43,7 +44,9 @@ int main()
     render::Renderer::registerPrePass(lines);
 
     // assets
-    scene::Model model("assets/models/fox.obj");
+    scene::Model foxModel("assets/models/fox/fox.obj");
+    scene::Model backpackModel("assets/models/backpack/backpack.obj");
+    scene::Model teapotModel("assets/models/teapot/teapot.obj");
     std::shared_ptr<render::GraphicsShader> shader = std::make_shared<render::GraphicsShader>(
         "assets/shaders/normal.vert.glsl",
         "assets/shaders/normal.frag.glsl"
@@ -62,19 +65,34 @@ int main()
     auto fog = std::make_shared<render::Fog>(true, 10.0f, 90.0f);
     render::Renderer::registerPostPass(fog);
 
-    scene::SceneObject* object = scene.addObject(&model);
-    object->getMaterial().setShader(shader);
-    object->getMaterial().setColor({1.0f, 0.5f, 0.0f});
-    object->getTransform().setPosition({0, 0, 0});
+    scene::SceneObject* foxMtl = scene.addObject(&foxModel);
+    foxMtl->getMaterial().setShader(shader);
+    foxMtl->getTransform().setPosition({-5.0f, 0.0f, 0.0f});
+
+    scene::SceneObject* foxColor = scene.addObject(&foxModel);
+    foxColor->getMaterial().setShader(shader);
+    foxColor->getTransform().setPosition({0.0f, 0.0f, 0.0f});
+    foxColor->getMaterial().setColor({1.0f, 0.5f, 0.0f});
+
+    scene::SceneObject* backpackTexture = scene.addObject(&backpackModel);
+    backpackTexture->getMaterial().setShader(shader);
+    backpackTexture->getTransform().setPosition({5.0f, 1.5f, 0.0f});
+
+    auto metalTexture = render::TextureLoader::instance().load("assets/models/teapot/metal.jpg");
+    scene::SceneObject* teapotFileTexture = scene.addObject(&teapotModel);
+    teapotFileTexture->getMaterial().setShader(shader);
+    teapotFileTexture->getMaterial().setTexture("uAlbedo", metalTexture, 0);
+    teapotFileTexture->getTransform().setPosition({12.0f, 1.5f, 0.0f});
+    teapotFileTexture->getTransform().setScale({0.2f, 0.2f, 0.2f});
 
     // loop
+    glEnable(GL_FRAMEBUFFER_SRGB);
     app::Loop loop(scene);
     loop.run(
         [&](float dt) {
             camera.update(app::Window::get(), dt);
-            object->getTransform().rotateZ(0.5f * dt);
             lines->setThickness(5.0f);
-            lines->addLine({-2.0f, 0.0f, -5.0f}, { 7.0f, 6.0f, -8.0f}, {1.0f, 1.0f, 1.0f});
+            lines->addLine({-5.0f, 5.0f, -5.0f}, {5.0f, 5.0f, -5.0f}, {1.0f, 1.0f, 1.0f});
         }
     );
 

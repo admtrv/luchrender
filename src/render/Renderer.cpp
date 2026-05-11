@@ -106,24 +106,81 @@ void Renderer::renderBasePass(const scene::Scene& scene)
             continue;
         }
 
-        auto shader = object->getMaterial().getShader();
-        if (!shader)
+        const Material& objectMaterial = object->getMaterial();
+
+        const auto& meshes = model->getMeshes();
+        for (size_t meshIdx = 0; meshIdx < meshes.size(); meshIdx++)
         {
-            continue;
-        }
+            int matId = model->getMeshMaterialIndex(meshIdx);
+            const Material* meshMaterial = nullptr;
+            if (matId >= 0 && static_cast<size_t>(matId) < model->getMaterials().size())
+            {
+                meshMaterial = model->getMaterials()[matId].get();
+            }
 
-        shader->bind();
-        shader->setMat4("uView", cam->view());
-        shader->setMat4("uProj", cam->proj(scene.getAspect()));
-        shader->setVec3("uLightDir", light->getDirection());
+            // shader: object override has priority
+            auto shader = objectMaterial.getShader();
+            if (!shader && meshMaterial)
+            {
+                shader = meshMaterial->getShader();
+            }
+            if (!shader)
+            {
+                continue;
+            }
 
-        // model uniforms
-        shader->setMat4("uModel", object->getTransform().getMatrix());
-        shader->setVec3("uColor", object->getMaterial().getColor());
+            shader->bind();
+            shader->setMat4("uView", cam->view());
+            shader->setMat4("uProj", cam->proj(scene.getAspect()));
+            shader->setVec3("uLightDir", light->getDirection());
+            shader->setMat4("uModel", object->getTransform().getMatrix());
 
-        for (const auto& mesh : model->getMeshes())
-        {
-            mesh.draw();
+            // color: object override > model material > white
+            glm::vec3 color(1.0f);
+            if (objectMaterial.hasColor())
+            {
+                color = objectMaterial.getColor();
+            }
+            else if (meshMaterial && meshMaterial->hasColor())
+            {
+                color = meshMaterial->getColor();
+            }
+            shader->setVec3("uColor", color);
+
+            // textures: object override first, then mesh material as fallback
+            bool hasAlbedo = false;
+            for (const auto& slot : objectMaterial.getTextures())
+            {
+                if (!slot.texture)
+                {
+                    continue;
+                }
+                slot.texture->bind(slot.unit);
+                shader->setInt(slot.uniformName.c_str(), static_cast<int>(slot.unit));
+                if (slot.uniformName == "uAlbedo")
+                {
+                    hasAlbedo = true;
+                }
+            }
+            if (meshMaterial)
+            {
+                for (const auto& slot : meshMaterial->getTextures())
+                {
+                    if (!slot.texture || hasAlbedo && slot.uniformName == "uAlbedo")
+                    {
+                        continue;
+                    }
+                    slot.texture->bind(slot.unit);
+                    shader->setInt(slot.uniformName.c_str(), static_cast<int>(slot.unit));
+                    if (slot.uniformName == "uAlbedo")
+                    {
+                        hasAlbedo = true;
+                    }
+                }
+            }
+            shader->setInt("uHasAlbedo", hasAlbedo ? 1 : 0);
+
+            meshes[meshIdx].draw();
         }
     }
 }

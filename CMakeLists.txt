@@ -66,6 +66,11 @@ add_library(tinyobjloader STATIC ${CMAKE_CURRENT_SOURCE_DIR}/external/tinyobjloa
 target_include_directories(tinyobjloader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/tinyobjloader)
 target_link_libraries(${LIB_NAME} PUBLIC tinyobjloader)
 
+# stb_image
+add_library(stb_image STATIC ${CMAKE_CURRENT_SOURCE_DIR}/external/stb/stb_image.cpp)
+target_include_directories(stb_image PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/stb)
+target_link_libraries(${LIB_NAME} PUBLIC stb_image)
+
 # if standalone app
 if(DEFINED PROJECT_IS_TOP_LEVEL)
     set(_default_app ${PROJECT_IS_TOP_LEVEL})
