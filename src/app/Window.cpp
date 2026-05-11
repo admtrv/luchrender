@@ -8,6 +8,19 @@ namespace BulletRender {
 namespace app {
 
 GLFWwindow *Window::s_Window = nullptr;
+double Window::s_scrollAccum = 0.0;
+
+void Window::scrollCallback(GLFWwindow*, double /*xoffset*/, double yoffset)
+{
+    s_scrollAccum += yoffset;
+}
+
+double Window::consumeScrollDelta()
+{
+    double v = s_scrollAccum;
+    s_scrollAccum = 0.0;
+    return v;
+}
 
 bool Window::init(const WindowConfig& cfg)
 {
@@ -34,6 +47,8 @@ bool Window::init(const WindowConfig& cfg)
     }
 
     glfwMakeContextCurrent(s_Window);
+
+    glfwSetScrollCallback(s_Window, scrollCallback);
 
     glfwSwapInterval(cfg.vsync ? 1 : 0);
 

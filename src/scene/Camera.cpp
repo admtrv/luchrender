@@ -4,6 +4,8 @@
 
 #include "Camera.h"
 
+#include "app/Window.h"
+
 #include <GLFW/glfw3.h>
 
 namespace BulletRender {
@@ -197,6 +199,58 @@ void FlyCamera::update(GLFWwindow* win, float dt)
     {
         m_pos += right * step;
     }
+}
+
+// OrbitCamera
+
+OrbitCamera::OrbitCamera(glm::vec3 target, float radius, float fovDeg, float zNear, float zFar)
+    : m_target(target), m_radius(radius), m_fovDeg(fovDeg), m_zNear(zNear), m_zFar(zFar)
+{}
+
+glm::vec3 OrbitCamera::position() const
+{
+    float e = glm::clamp(m_elevation, 0.01f, 3.13159f);
+    return m_target + glm::vec3(
+        m_radius * std::sin(e) * std::cos(m_azimuth),
+        m_radius * std::cos(e),
+        m_radius * std::sin(e) * std::sin(m_azimuth)
+    );
+}
+
+glm::mat4 OrbitCamera::view() const
+{
+    return glm::lookAt(position(), m_target, glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+glm::mat4 OrbitCamera::proj(float aspect) const
+{
+    return glm::perspective(glm::radians(m_fovDeg), aspect, m_zNear, m_zFar);
+}
+
+void OrbitCamera::update(GLFWwindow* win, float /*dt*/)
+{
+    double x, y;
+    glfwGetCursorPos(win, &x, &y);
+
+    bool dragging = glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+    if (dragging)
+    {
+        m_azimuth   += static_cast<float>(x - m_lastX) * 0.005f;
+        m_elevation -= static_cast<float>(y - m_lastY) * 0.005f;
+        m_elevation = glm::clamp(m_elevation, 0.01f, 3.13159f);
+    }
+
+    m_lastX = x;
+    m_lastY = y;
+
+    double scroll = app::Window::consumeScrollDelta();
+    if (scroll != 0.0)
+    {
+        m_radius *= static_cast<float>(std::pow(0.9, scroll));
+    }
+
+    m_moving = dragging || scroll != 0.0;
 }
 
 } // namespace scene

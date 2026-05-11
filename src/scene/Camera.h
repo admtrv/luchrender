@@ -106,5 +106,41 @@ private:
     bool m_prevTogglePressed = false;
 };
 
+// orbit camera (LMB drag = rotate, scroll = zoom)
+class OrbitCamera : public Camera {
+public:
+    explicit OrbitCamera(glm::vec3 target = {0, 0, 0},
+                         float radius = 10.0f,
+                         float fovDeg = 60.0f,
+                         float zNear = 0.1f,
+                         float zFar = 1000.0f);
+
+    glm::mat4 view() const override;
+    glm::mat4 proj(float aspect) const override;
+    glm::vec3 position() const override;
+
+    float near() const override { return m_zNear; }
+    float far()  const override { return m_zFar; }
+
+    glm::vec3 target() const { return m_target; }
+    float radius() const { return m_radius; }
+    bool isMoving() const { return m_moving; }
+
+    void update(GLFWwindow* win, float dt) override;
+
+private:
+    glm::vec3 m_target;
+    float m_radius;
+    float m_azimuth = 0.0f;
+    float m_elevation = 1.5707963f;
+    float m_fovDeg;
+    float m_zNear;
+    float m_zFar;
+
+    double m_lastX = 0.0;
+    double m_lastY = 0.0;
+    bool m_moving = false;
+};
+
 } // namespace scene
 } // namespace BulletRender

@@ -37,11 +37,16 @@ public:
 
     static void getSize(int& width, int& height);
 
+    // scroll delta accumulated since last call; returns dy and clears it
+    static double consumeScrollDelta();
 
     static GLFWwindow *get();
 
 private:
+    static void scrollCallback(GLFWwindow* w, double xoffset, double yoffset);
+
     static GLFWwindow *s_Window;
+    static double s_scrollAccum;
 };
 
 } // namespace app
