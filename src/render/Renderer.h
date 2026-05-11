@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Shader.h"
-#include "FrameBuffer.h"
+#include "buffers/FrameBuffer.h"
 #include "scene/Model.h"
 #include "scene/Mesh.h"
 #include "scene/Scene.h"

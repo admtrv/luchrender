@@ -1,5 +1,5 @@
 /*
- * Framebuffer.cpp
+ * FrameBuffer.cpp
  */
 
 #include "FrameBuffer.h"

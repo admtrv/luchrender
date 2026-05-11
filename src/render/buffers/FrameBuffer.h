@@ -1,5 +1,5 @@
 /*
- * Framebuffer.h
+ * FrameBuffer.h
  */
 
 #pragma once
