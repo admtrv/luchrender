@@ -25,5 +25,12 @@ void Scene::clear()
     m_objects.clear();
 }
 
+void Scene::removeLight(size_t index)
+{
+    if (index < m_lights.size()) {
+        m_lights.erase(m_lights.begin() + index);
+    }
+}
+
 } // namespace scene
 } // namespace BulletRender

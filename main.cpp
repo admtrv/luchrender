@@ -67,7 +67,12 @@ int main()
     // skybox
     auto skybox = std::make_shared<render::SkyBox>(sky);
     render::Renderer::registerPrePass(skybox);
+
+    // or
 */
+    // fog
+    auto fog = std::make_shared<render::Fog>(true, 10.0f, 90.0f);
+    render::Renderer::registerPostPass(fog);
 
     // scene
     scene::Scene scene;
@@ -75,26 +80,64 @@ int main()
     scene::FlyCamera camera({0, 1, 5});
     scene.setCamera(&camera);
 
-    scene::DirectionalLight light;
-    scene.setLight(&light);
+    // lights:
 
-    // fog
-    auto fog = std::make_shared<render::Fog>(true, 10.0f, 90.0f);
-    render::Renderer::registerPostPass(fog);
+    // global light
+    scene::AmbientLight ambient;
+    ambient.setColor({0.4f, 0.45f, 0.55f});
+    ambient.setIntensity(0.3f);
+    scene.addLight(&ambient);
 
+    // sun
+    scene::DirectionalLight sun({-0.7f, 0.7f, 0.25f});
+    sun.setColor({1.0f, 0.95f, 0.85f});
+    sun.setIntensity(0.8f);
+    scene.addLight(&sun);
+
+    // lamp
+    scene::SpotLight spot({-5.0f, 6.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, 15.0f, 25.0f, 15.0f);
+    spot.setColor({1.0f, 1.0f, 1.0f});
+    spot.setIntensity(2.0f);
+    scene.addLight(&spot);
+
+    // blue point
+    scene::PointLight pointBlue({7.0f, 2.5f, 2.0f}, 8.0f);
+    pointBlue.setColor({0.2f, 0.4f, 1.0f});
+    pointBlue.setIntensity(4.0f);
+    scene.addLight(&pointBlue);
+
+    // pink point
+    scene::PointLight pointPink({10.0f, 2.5f, -2.0f}, 8.0f);
+    pointPink.setColor({1.0f, 0.3f, 0.7f});
+    pointPink.setIntensity(4.0f);
+    scene.addLight(&pointPink);
+
+    // objects:
+
+    // floor
+    scene::Box floorModel(40.0f, 0.2f, 20.0f);
+    scene::SceneObject* floor = scene.addObject(&floorModel);
+    floor->getMaterial().setShader(shader);
+    floor->getMaterial().setColor({0.5f, 0.5f, 0.55f});
+    floor->getTransform().setPosition({3.5f, -0.15f, 0.0f});
+
+    // fox with automatic colors from mtl
     scene::SceneObject* foxMtl = scene.addObject(&foxModel);
     foxMtl->getMaterial().setShader(shader);
     foxMtl->getTransform().setPosition({-5.0f, 0.0f, 0.0f});
 
+    // fox with color
     scene::SceneObject* foxColor = scene.addObject(&foxModel);
     foxColor->getMaterial().setShader(shader);
     foxColor->getTransform().setPosition({0.0f, 0.0f, 0.0f});
     foxColor->getMaterial().setColor({1.0f, 0.5f, 0.0f});
 
+    // backpack with automatic textures
     scene::SceneObject* backpackTexture = scene.addObject(&backpackModel);
     backpackTexture->getMaterial().setShader(shader);
     backpackTexture->getTransform().setPosition({5.0f, 1.5f, 0.0f});
 
+    // teapot with texture
     auto metalTexture = render::TextureLoader::instance().load("assets/textures/metal.jpg");
     scene::SceneObject* teapotFileTexture = scene.addObject(&teapotModel);
     teapotFileTexture->getMaterial().setShader(shader);
@@ -103,7 +146,6 @@ int main()
     teapotFileTexture->getTransform().setScale({0.2f, 0.2f, 0.2f});
 
     // loop
-    glEnable(GL_FRAMEBUFFER_SRGB);
     app::Loop loop(scene);
     loop.run(
         [&](float dt) {

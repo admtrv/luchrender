@@ -6,6 +6,7 @@
 
 #include "Shader.h"
 #include "buffers/FrameBuffer.h"
+#include "buffers/DepthFrameBuffer.h"
 #include "scene/Model.h"
 #include "scene/Mesh.h"
 #include "scene/Scene.h"
@@ -21,6 +22,9 @@
 #include <string>
 #include <memory>
 #include <iostream>
+
+#define SHADOW_VERT_PATH "assets/shaders/shadow.vert.glsl"
+#define SHADOW_FRAG_PATH "assets/shaders/shadow.frag.glsl"
 
 namespace BulletRender {
 namespace render {
@@ -52,11 +56,16 @@ public:
 
 private:
     static void renderBasePass(const scene::Scene& scene);
+    static void renderShadowPass(const scene::Scene& scene);
+    static void bindShadowMaps(GraphicsShader& shader);
 
     static std::vector<std::shared_ptr<IRenderPass>> s_pre;
     static std::vector<std::shared_ptr<IRenderPass>> s_post;
 
     static std::unique_ptr<FrameBuffer> s_sceneFbo;
+    static std::unique_ptr<DepthFrameBuffer> s_dirShadowFbo;
+    static std::vector<std::unique_ptr<DepthFrameBuffer>> s_spotShadowFbos;
+    static std::shared_ptr<GraphicsShader> s_shadowShader;
 
     static RenderConfig s_config;
 };

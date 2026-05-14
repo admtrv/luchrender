@@ -47,7 +47,7 @@ static glm::vec3 safeNormalize(const glm::vec3& vector)
     return vector * glm::inversesqrt(len2);
 }
 
-// classic .mtl -> Material conversion (only the basics: diffuse color + albedo texture)
+// .mtl -> Material conversion: phong terms (kd, ks, ns, ke) + diffuse/specular maps
 static std::vector<std::shared_ptr<render::Material>>
 buildMaterials(const std::vector<tinyobj::material_t>& tinyMats, const std::string& baseDir)
 {
@@ -57,8 +57,14 @@ buildMaterials(const std::vector<tinyobj::material_t>& tinyMats, const std::stri
     for (const auto& m : tinyMats)
     {
         auto mat = std::make_shared<render::Material>();
-        mat->setColor({m.diffuse[0], m.diffuse[1], m.diffuse[2]});
 
+        // phong scalars/colors
+        mat->setColor({m.diffuse[0], m.diffuse[1], m.diffuse[2]});
+        mat->setSpecular({m.specular[0], m.specular[1], m.specular[2]});
+        mat->setShininess(m.shininess);
+        mat->setEmissive({m.emission[0], m.emission[1], m.emission[2]});
+
+        // map_Kd, diffuse texture
         if (!m.diffuse_texname.empty())
         {
             std::string fullPath = (std::filesystem::path(baseDir) / m.diffuse_texname).string();
@@ -68,6 +74,18 @@ buildMaterials(const std::vector<tinyobj::material_t>& tinyMats, const std::stri
                 mat->setTexture("uAlbedo", tex, 0);
             }
         }
+
+        // map_Ks, specular mask
+        if (!m.specular_texname.empty())
+        {
+            std::string fullPath = (std::filesystem::path(baseDir) / m.specular_texname).string();
+            auto tex = render::TextureLoader::instance().load(fullPath);
+            if (tex)
+            {
+                mat->setTexture("uSpecularMap", tex, 1);
+            }
+        }
+
         materials.push_back(std::move(mat));
     }
 

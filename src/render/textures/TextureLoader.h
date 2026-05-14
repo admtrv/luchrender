@@ -16,7 +16,7 @@ namespace render {
 struct TextureLoadOptions {
     bool sRGB = true;
     bool generateMipmaps = true;
-    bool flipVertically = true;
+    bool flipVertically = false;
     SamplerConfig sampler{};
 };
 

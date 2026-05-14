@@ -8,13 +8,18 @@ uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProj;
 
+out vec3 vWorldPos;
 out vec3 vNor;
 out vec2 vUv;
 
 void main()
 {
+    vec4 worldPos = uModel * vec4(aPos, 1.0);
+    vWorldPos = worldPos.xyz;
+
     mat3 nmat = mat3(uModel);
     vNor = normalize(nmat * aNor);
     vUv = aUv;
-    gl_Position = uProj * uView * uModel * vec4(aPos, 1.0);
+
+    gl_Position = uProj * uView * worldPos;
 }

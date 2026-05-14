@@ -47,19 +47,22 @@ public:
     const std::vector<std::unique_ptr<SceneObject>>& getObjects() const { return m_objects; };
     void clear();
 
+    void addLight(const Light* light) { m_lights.push_back(light); }
+    void removeLight(size_t index);
+    void clearLights() { m_lights.clear(); }
+    const std::vector<const Light*>& getLights() const { return m_lights; }
+
     void setCamera(const Camera* cam) { m_camera = cam; }
-    void setLight(const Light* light) { m_light = light; }
     void setAspect(float aspect) { m_aspect = aspect; }
 
     const Camera* getCamera() const { return m_camera; }
-    const Light* getLight() const { return m_light; }
     float getAspect() const { return m_aspect; }
 
 private:
     std::vector<std::unique_ptr<SceneObject>> m_objects;
+    std::vector<const Light*> m_lights;
 
     const Camera* m_camera = nullptr;
-    const Light* m_light = nullptr;
 
     float m_aspect = 1.0f;
 };
