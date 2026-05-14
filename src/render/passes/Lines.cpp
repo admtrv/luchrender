@@ -93,8 +93,8 @@ void Lines::render(const scene::Scene& scene)
     glDepthFunc(GL_LESS);
 
     // shader
-    glm::mat4 view = cam->view();
-    glm::mat4 proj = cam->proj(scene.getAspect());
+    glm::mat4 view = cam->getView();
+    glm::mat4 proj = cam->getProj(scene.getAspect());
 
     m_prog->bind();
     m_prog->setMat4("uView", view);

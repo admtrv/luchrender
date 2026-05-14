@@ -37,8 +37,8 @@ void Grid::render(const scene::Scene& scene)
         return;
     }
 
-    glm::mat4 view = cam->view();
-    glm::mat4 proj = cam->proj(scene.getAspect());
+    glm::mat4 view = cam->getView();
+    glm::mat4 proj = cam->getProj(scene.getAspect());
 
     // depth
     GLboolean depthEnabled = glIsEnabled(GL_DEPTH_TEST);
@@ -52,8 +52,8 @@ void Grid::render(const scene::Scene& scene)
     m_prog->bind();
     m_prog->setMat4("uInvViewProj", glm::inverse(proj * view));
     m_prog->setMat4("uViewProj", proj * view);
-    m_prog->setFloat("uNear", cam->near());
-    m_prog->setFloat("uFar", cam->far());
+    m_prog->setFloat("uNear", cam->getNear());
+    m_prog->setFloat("uFar", cam->getFar());
 
     glBindVertexArray(m_Vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);

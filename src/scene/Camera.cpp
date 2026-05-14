@@ -13,33 +13,33 @@ namespace scene {
 
 // Camera
 
-// view() is lookAt(pos, target, worldUp) -> upper-left 3x3 is the camera basis as rows
-glm::vec3 Camera::forward() const
+// view matrix is lookAt(pos, target, worldUp) -> upper-left 3x3 is the camera basis as rows
+glm::vec3 Camera::getForward() const
 {
-    glm::mat4 v = view();
+    glm::mat4 v = getView();
     return -glm::vec3(v[0][2], v[1][2], v[2][2]);
 }
 
-glm::vec3 Camera::right() const
+glm::vec3 Camera::getRight() const
 {
-    glm::mat4 v = view();
+    glm::mat4 v = getView();
     return glm::vec3(v[0][0], v[1][0], v[2][0]);
 }
 
-glm::vec3 Camera::up() const
+glm::vec3 Camera::getUp() const
 {
-    glm::mat4 v = view();
+    glm::mat4 v = getView();
     return glm::vec3(v[0][1], v[1][1], v[2][1]);
 }
 
 // StaticCamera
 
-glm::mat4 StaticCamera::view() const
+glm::mat4 StaticCamera::getView() const
 {
     return glm::lookAt(m_pos, m_target, m_up);
 }
 
-glm::mat4 StaticCamera::proj(float aspect) const
+glm::mat4 StaticCamera::getProj(float aspect) const
 {
     return glm::perspective(glm::radians(m_fovDeg), aspect, m_zNear, m_zFar);
 }
@@ -82,13 +82,13 @@ glm::vec3 FlyCamera::forwardDir() const
     return glm::normalize(dir);
 }
 
-glm::mat4 FlyCamera::view() const
+glm::mat4 FlyCamera::getView() const
 {
     const glm::vec3 f = forwardDir();
     return glm::lookAt(m_pos, m_pos + f, glm::vec3 WORLD_UP);
 }
 
-glm::mat4 FlyCamera::proj(float aspect) const
+glm::mat4 FlyCamera::getProj(float aspect) const
 {
     return glm::perspective(glm::radians(m_fovDeg), aspect > 0.0f ? aspect : 1.0f, m_zNear, m_zFar);
 }
@@ -228,7 +228,7 @@ OrbitCamera::OrbitCamera(glm::vec3 target, float radius, float fovDeg, float zNe
     : m_target(target), m_radius(radius), m_fovDeg(fovDeg), m_zNear(zNear), m_zFar(zFar)
 {}
 
-glm::vec3 OrbitCamera::position() const
+glm::vec3 OrbitCamera::getPosition() const
 {
     float e = glm::clamp(m_elevation, 0.01f, 3.13159f);
     return m_target + glm::vec3(
@@ -238,12 +238,12 @@ glm::vec3 OrbitCamera::position() const
     );
 }
 
-glm::mat4 OrbitCamera::view() const
+glm::mat4 OrbitCamera::getView() const
 {
-    return glm::lookAt(position(), m_target, glm::vec3(0.0f, 1.0f, 0.0f));
+    return glm::lookAt(getPosition(), m_target, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-glm::mat4 OrbitCamera::proj(float aspect) const
+glm::mat4 OrbitCamera::getProj(float aspect) const
 {
     return glm::perspective(glm::radians(m_fovDeg), aspect, m_zNear, m_zFar);
 }

@@ -29,9 +29,9 @@ public:
 
     void bindAsImage(unsigned unit, GLenum access = GL_WRITE_ONLY) const;
 
-    int width() const { return m_width; }
-    int height() const { return m_height; }
-    GLenum internalFormat() const { return m_internalFormat; }
+    int getWidth() const { return m_width; }
+    int getHeight() const { return m_height; }
+    GLenum getInternalFormat() const { return m_internalFormat; }
     bool hasMipmaps() const { return m_hasMipmaps; }
 
 private:

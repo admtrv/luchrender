@@ -75,8 +75,8 @@ void SkyBox::render(const scene::Scene& scene)
     glDepthFunc(GL_LEQUAL);
 
     m_shader->bind();
-    m_shader->setMat4("uView", cam->view());
-    m_shader->setMat4("uProj", cam->proj(scene.getAspect()));
+    m_shader->setMat4("uView", cam->getView());
+    m_shader->setMat4("uProj", cam->getProj(scene.getAspect()));
     m_cubemap->bind(0);
     m_shader->setInt("uSkybox", 0);
 

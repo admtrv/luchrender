@@ -20,7 +20,7 @@ public:
     virtual ~Shader() = 0;
 
     void bind() const;
-    unsigned id() const { return m_id; }
+    unsigned getId() const { return m_id; }
 
     void setMat4(const char* name, const glm::mat4& mat) const;
     void setVec3(const char* name, const glm::vec3& vec) const;

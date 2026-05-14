@@ -40,8 +40,8 @@ void Fog::render(const scene::Scene& scene)
         return;
     }
 
-    glm::mat4 view = cam->view();
-    glm::mat4 proj = cam->proj(scene.getAspect());
+    glm::mat4 view = cam->getView();
+    glm::mat4 proj = cam->getProj(scene.getAspect());
 
     GLboolean depthEnabled = glIsEnabled(GL_DEPTH_TEST);
     glDisable(GL_DEPTH_TEST);
@@ -53,7 +53,7 @@ void Fog::render(const scene::Scene& scene)
 
     m_prog->bind();
     m_prog->setMat4("uInvViewProj", glm::inverse(proj * view));
-    m_prog->setVec3("uCameraPos", cam->position());
+    m_prog->setVec3("uCameraPos", cam->getPosition());
     m_prog->setFloat("uFogStart", m_fogStart);
     m_prog->setFloat("uFogEnd", m_fogEnd);
     m_prog->setVec3("uFogColor", fogColor);

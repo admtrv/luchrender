@@ -396,10 +396,10 @@ void Renderer::renderBasePass(const scene::Scene& scene)
             }
 
             shader->bind();
-            shader->setMat4("uView", cam->view());
-            shader->setMat4("uProj", cam->proj(scene.getAspect()));
+            shader->setMat4("uView", cam->getView());
+            shader->setMat4("uProj", cam->getProj(scene.getAspect()));
             shader->setMat4("uModel", object->getTransform().getMatrix());
-            shader->setVec3("uCameraPos", cam->position());
+            shader->setVec3("uCameraPos", cam->getPosition());
             applyLights(*shader, lights);
             bindShadowMaps(*shader);
 

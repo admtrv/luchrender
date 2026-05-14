@@ -22,17 +22,17 @@ class Camera {
 public:
     virtual ~Camera() = default;
 
-    virtual glm::mat4 view() const = 0;
-    virtual glm::mat4 proj(float aspect) const = 0;
+    virtual glm::mat4 getView() const = 0;
+    virtual glm::mat4 getProj(float aspect) const = 0;
 
-    virtual float near() const = 0;
-    virtual float far() const = 0;
-    virtual glm::vec3 position() const = 0;
+    virtual float getNear() const = 0;
+    virtual float getFar() const = 0;
+    virtual glm::vec3 getPosition() const = 0;
 
-    // orientation basis derived from view() (transpose of upper 3x3)
-    virtual glm::vec3 forward() const;
-    virtual glm::vec3 right() const;
-    virtual glm::vec3 up() const;
+    // orientation basis derived from getView() (transpose of upper 3x3)
+    virtual glm::vec3 getForward() const;
+    virtual glm::vec3 getRight() const;
+    virtual glm::vec3 getUp() const;
 
     virtual void update(GLFWwindow* win, float dt) {}
 };
@@ -49,12 +49,12 @@ public:
         : m_pos(pos), m_target(target), m_up(up), m_fovDeg(fovDeg), m_zNear(zNear), m_zFar(zFar)
     {}
 
-    glm::mat4 view() const override;
-    glm::mat4 proj(float aspect) const override;
+    glm::mat4 getView() const override;
+    glm::mat4 getProj(float aspect) const override;
 
-    float near() const override { return m_zNear; }
-    float far()  const override { return m_zFar; }
-    glm::vec3 position() const override { return m_pos; }
+    float getNear() const override { return m_zNear; }
+    float getFar()  const override { return m_zFar; }
+    glm::vec3 getPosition() const override { return m_pos; }
 
 private:
     glm::vec3 m_pos;
@@ -78,12 +78,12 @@ public:
                        float mouseSensitivity = 0.1f,
                        bool lockCursor = true);
 
-    glm::mat4 view() const override;
-    glm::mat4 proj(float aspect) const override;
+    glm::mat4 getView() const override;
+    glm::mat4 getProj(float aspect) const override;
 
-    float near() const override { return m_zNear; }
-    float far()  const override { return m_zFar; }
-    glm::vec3 position() const override { return m_pos; }
+    float getNear() const override { return m_zNear; }
+    float getFar()  const override { return m_zFar; }
+    glm::vec3 getPosition() const override { return m_pos; }
 
     void update(GLFWwindow* win, float dt) override;
 
@@ -120,15 +120,15 @@ public:
                          float zNear = 0.1f,
                          float zFar = 1000.0f);
 
-    glm::mat4 view() const override;
-    glm::mat4 proj(float aspect) const override;
-    glm::vec3 position() const override;
+    glm::mat4 getView() const override;
+    glm::mat4 getProj(float aspect) const override;
+    glm::vec3 getPosition() const override;
 
-    float near() const override { return m_zNear; }
-    float far()  const override { return m_zFar; }
+    float getNear() const override { return m_zNear; }
+    float getFar()  const override { return m_zFar; }
 
-    glm::vec3 target() const { return m_target; }
-    float radius() const { return m_radius; }
+    glm::vec3 getTarget() const { return m_target; }
+    float getRadius() const { return m_radius; }
     bool isMoving() const { return m_moving; }
 
     void update(GLFWwindow* win, float dt) override;
