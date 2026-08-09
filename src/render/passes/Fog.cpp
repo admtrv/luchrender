@@ -28,7 +28,7 @@ void Fog::render(const scene::Scene& scene)
         return;
     }
 
-    const scene::Camera* cam = scene.getCamera();
+    const scene::Camera* cam = scene.getActiveCamera();
     if (!cam)
     {
         std::cerr << "fog: no camera in scene\n";

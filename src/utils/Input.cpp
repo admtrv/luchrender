@@ -59,6 +59,10 @@ int Input::glfwKeyFromInputKey(InputKey key) const
             return GLFW_KEY_S;
         case InputKey::D:
             return GLFW_KEY_D;
+        case InputKey::C:
+            return GLFW_KEY_C;
+        case InputKey::G:
+            return GLFW_KEY_G;
         case InputKey::UP:
             return GLFW_KEY_UP;
         case InputKey::DOWN:

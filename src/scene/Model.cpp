@@ -99,8 +99,7 @@ buildMaterials(const std::vector<tinyobj::material_t>& tinyMats, const std::stri
 
 bool Model::loadObj(const std::string& path)
 {
-    m_meshes.clear();
-    m_meshMaterialIndex.clear();
+    clearMeshes();
     m_materials.clear();
 
     tinyobj::ObjReaderConfig config;
@@ -256,12 +255,39 @@ bool Model::loadObj(const std::string& path)
                 }
             }
 
-            m_meshes.emplace_back(bucket.vertices, bucket.indices);
-            m_meshMaterialIndex.push_back(matId);
+            addMesh(bucket.vertices, bucket.indices, matId);
         }
     }
 
     return true;
+}
+
+void Model::addMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned>& indices, int materialIdx)
+{
+    // first mesh seeds bounds, later ones only stretch them
+    if (m_meshes.empty() && !vertices.empty())
+    {
+        m_boundsMin = vertices.front().position;
+        m_boundsMax = vertices.front().position;
+    }
+
+    for (const Vertex& vertex : vertices)
+    {
+        m_boundsMin = glm::min(m_boundsMin, vertex.position);
+        m_boundsMax = glm::max(m_boundsMax, vertex.position);
+    }
+
+    m_meshes.emplace_back(vertices, indices);
+    m_meshMaterialIndex.push_back(materialIdx);
+}
+
+void Model::clearMeshes()
+{
+    m_meshes.clear();
+    m_meshMaterialIndex.clear();
+
+    m_boundsMin = glm::vec3(0.0f);
+    m_boundsMax = glm::vec3(0.0f);
 }
 
 int Model::getMeshMaterialIndex(size_t meshIdx) const
@@ -334,8 +360,7 @@ Box::Box(float sizeX, float sizeY, float sizeZ)
         indices.push_back(base + 3);
     }
 
-    m_meshes.emplace_back(vertices, indices);
-    m_meshMaterialIndex.push_back(-1);
+    addMesh(vertices, indices, -1);
 }
 
 } // namespace scene

@@ -10,6 +10,7 @@
 #include "render/passes/Fog.h"
 #include "render/passes/SkyBox.h"
 #include "render/Renderer.h"
+#include "render/DebugDraw.h"
 #include "render/Shader.h"
 #include "render/textures/TextureLoader.h"
 #include "render/textures/CubeMap.h"
@@ -17,6 +18,7 @@
 #include "scene/Model.h"
 #include "scene/Camera.h"
 #include "scene/Light.h"
+#include "utils/Input.h"
 
 #include <cmath>
 
@@ -43,11 +45,14 @@ int main()
     auto worldAxis = std::make_shared<render::WorldAxis>();
     render::Renderer::registerPrePass(worldAxis);
 
-/*
     // lines
     auto lines = std::make_shared<render::Lines>();
-    render::Renderer::registerPrePass(lines);
-*/
+    lines->setDepthTest(false);
+    render::Renderer::registerOverlayPass(lines);
+
+    // debug gizmos
+    render::DebugDraw debug(lines);
+    debug.setShowBounds(true);
 
     // assets
     scene::Model foxModel("assets/models/fox/fox.obj");
@@ -81,8 +86,13 @@ int main()
     // scene
     scene::Scene scene;
 
+    // cameras:
+
     scene::FlyCamera camera({0, 1, 5});
-    scene.setCamera(&camera);
+    scene.setActiveCamera(&camera);
+
+    scene::StaticCamera sceneCamera({-8.0f, 4.0f, 8.0f}, {0.0f, 1.0f, 0.0f});
+    scene.addCamera(&sceneCamera);
 
     // lights:
 
@@ -153,17 +163,41 @@ int main()
     teapotFileTexture->getTransform().setLocalScale(0.2f);
     floor->addChild(teapotFileTexture);
 
+    // controls
+    bool showDebug = true;
+
+    utils::Input& input = utils::Input::instance();
+    input.bindKey(utils::InputKey::ESCAPE, [] {
+        app::Window::setShouldClose(true);
+    });
+    input.bindKey(utils::InputKey::G, [&] {
+        showDebug = !showDebug;
+    });
+    input.bindKey(utils::InputKey::C, [&] {
+        const bool flyActive = scene.getActiveCamera() == &camera;
+        scene.setActiveCamera(flyActive ? static_cast<scene::Camera*>(&sceneCamera) : &camera);
+    });
+
     // loop
     float elapsed = 0.0f;
     app::Loop loop(scene);
     loop.run(
         [&](float dt) {
-            camera.update(app::Window::get(), dt);
+            input.update(app::Window::get());
+
+            if (scene.getActiveCamera() == &camera)
+            {
+                camera.update(app::Window::get(), dt);
+            }
+
             elapsed += dt;
 
-            //lines->setThickness(5.0f);
-            //lines->addLine({-5.0f, 5.0f, -5.0f}, {5.0f, 5.0f, -5.0f}, {1.0f, 1.0f, 1.0f});
             floor->getTransform().setPosition({3.5f, -0.15f + 0.5f * std::sin(elapsed), 0.0f});
+
+            if (showDebug)
+            {
+                debug.drawScene(scene);
+            }
         }
     );
 

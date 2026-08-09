@@ -32,6 +32,7 @@ public:
 
     // API for frame
     void setThickness(float px);
+    void setDepthTest(bool enabled) { m_depthTest = enabled; }                      // off makes lines show through geometry
     void addLine(const glm::vec3& a, const glm::vec3& b, const glm::vec3& color);
     void addPolyline(const std::vector<glm::vec3>& pts, const glm::vec3& color);
 
@@ -47,6 +48,7 @@ private:
 
     std::vector<LineVertex> m_vertices;
     float m_thickness = 2.0f;
+    bool m_depthTest = true;
 };
 
 } // namespace render

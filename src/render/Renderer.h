@@ -49,6 +49,7 @@ public:
     static void resizeViewport(int width, int height);
 
     static void registerPrePass(std::shared_ptr<IRenderPass> pass);
+    static void registerOverlayPass(std::shared_ptr<IRenderPass> pass);     // on the final image, untouched by post-passes
     static void registerPostPass(std::shared_ptr<IRenderPass> pass);
 
     static FrameBuffer* getSceneFrameBuffer() { return s_sceneFbo.get(); }
@@ -62,6 +63,7 @@ private:
     static void bindShadowMaps(GraphicsShader& shader);
 
     static std::vector<std::shared_ptr<IRenderPass>> s_pre;
+    static std::vector<std::shared_ptr<IRenderPass>> s_overlay;
     static std::vector<std::shared_ptr<IRenderPass>> s_post;
 
     static std::unique_ptr<FrameBuffer> s_sceneFbo;

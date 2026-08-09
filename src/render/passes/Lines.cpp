@@ -77,7 +77,7 @@ void Lines::render(const scene::Scene& scene)
         return;
     }
 
-    const scene::Camera* cam = scene.getCamera();
+    const scene::Camera* cam = scene.getActiveCamera();
     if (!cam)
     {
         std::cerr << "lines: no camera in scene\n";
@@ -85,14 +85,21 @@ void Lines::render(const scene::Scene& scene)
         return;
     }
 
-    // depth state
-    GLboolean depthEnabled = glIsEnabled(GL_DEPTH_TEST);
-    if (!depthEnabled)
+    // depth state, disabled lines show through geometry
+    const GLboolean depthEnabled = glIsEnabled(GL_DEPTH_TEST);
+    if (m_depthTest)
     {
-        glEnable(GL_DEPTH_TEST);
+        if (!depthEnabled)
+        {
+            glEnable(GL_DEPTH_TEST);
+        }
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
     }
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LESS);
+    else if (depthEnabled)
+    {
+        glDisable(GL_DEPTH_TEST);
+    }
 
     // shader
     glm::mat4 view = cam->getView();
@@ -111,7 +118,12 @@ void Lines::render(const scene::Scene& scene)
     glDrawArrays(GL_LINES, 0, (GLint)m_vertices.size());
     glBindVertexArray(0);
 
-    if (!depthEnabled)
+    // restore whatever caller had
+    if (depthEnabled)
+    {
+        glEnable(GL_DEPTH_TEST);
+    }
+    else
     {
         glDisable(GL_DEPTH_TEST);
     }

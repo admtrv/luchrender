@@ -31,7 +31,7 @@ void Grid::render(const scene::Scene& scene)
         return;
     }
 
-    const scene::Camera* cam = scene.getCamera();
+    const scene::Camera* cam = scene.getActiveCamera();
 
     if (!cam )
     {

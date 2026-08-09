@@ -15,6 +15,7 @@ namespace utils {
 enum class InputKey {
     SPACE,
     W, A, S, D,
+    C, G,
     UP, DOWN, LEFT, RIGHT,
     ESCAPE
 };

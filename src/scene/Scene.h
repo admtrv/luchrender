@@ -56,14 +56,21 @@ public:
     void clearLights() { m_lights.clear(); }
     const std::vector<const Light*>& getLights() const { return m_lights; }
 
-    // camera
-    void setCamera(const Camera* cam) { m_camera = cam; }
-    const Camera* getCamera() const { return m_camera; }
+    // camera, first one added becomes active unless told otherwise
+    void addCamera(const Camera* camera);
+    void removeCamera(size_t index);
+    void clearCameras();
+    const std::vector<const Camera*>& getCameras() const { return m_cameras; }
+
+    // the one the frame is rendered through
+    void setActiveCamera(const Camera* camera);
+    const Camera* getActiveCamera() const { return m_activeCamera; }
 
 private:
     std::vector<std::unique_ptr<SceneObject>> m_objects;    // scene owns its objects
-    std::vector<const Light*> m_lights;                     // scene does not own lights and camera
-    const Camera* m_camera = nullptr;
+    std::vector<const Light*> m_lights;                     // scene does not own lights and cameras
+    std::vector<const Camera*> m_cameras;
+    const Camera* m_activeCamera = nullptr;
 };
 
 } // namespace scene

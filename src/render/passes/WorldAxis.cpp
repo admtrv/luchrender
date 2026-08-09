@@ -5,6 +5,7 @@
 #include "WorldAxis.h"
 
 #include "render/Renderer.h"
+#include "Colors.h"
 
 #include <iostream>
 
@@ -35,7 +36,7 @@ void WorldAxis::render(const scene::Scene& scene)
         return;
     }
 
-    const scene::Camera* cam = scene.getCamera();
+    const scene::Camera* cam = scene.getActiveCamera();
     if (!cam)
     {
         std::cerr << "axis: no camera in scene\n";
@@ -58,6 +59,10 @@ void WorldAxis::render(const scene::Scene& scene)
     m_prog->setMat4("uViewProj", proj * view);
     m_prog->setFloat("uNear", cam->getNear());
     m_prog->setFloat("uFar", cam->getFar());
+
+    m_prog->setVec3("uAxisXColor", colors::AxisX);
+    m_prog->setVec3("uAxisYColor", colors::AxisY);
+    m_prog->setVec3("uAxisZColor", colors::AxisZ);
 
     glBindVertexArray(m_Vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);

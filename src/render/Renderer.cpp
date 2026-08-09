@@ -9,6 +9,7 @@ namespace BulletRender {
 namespace render {
 
 std::vector<std::shared_ptr<IRenderPass>> Renderer::s_pre;
+std::vector<std::shared_ptr<IRenderPass>> Renderer::s_overlay;
 std::vector<std::shared_ptr<IRenderPass>> Renderer::s_post;
 std::unique_ptr<FrameBuffer> Renderer::s_sceneFbo;
 std::unique_ptr<DepthFrameBuffer> Renderer::s_dirShadowFbo;
@@ -186,6 +187,11 @@ void Renderer::registerPrePass(std::shared_ptr<IRenderPass> pass)
     s_pre.push_back(std::move(pass));
 }
 
+void Renderer::registerOverlayPass(std::shared_ptr<IRenderPass> pass)
+{
+    s_overlay.push_back(std::move(pass));
+}
+
 void Renderer::registerPostPass(std::shared_ptr<IRenderPass> pass)
 {
     s_post.push_back(std::move(pass));
@@ -230,6 +236,12 @@ void Renderer::render(const scene::Scene& scene)
         {
             p->render(scene);
         }
+    }
+
+    // OverlayPass
+    for (auto& p : s_overlay)
+    {
+        p->render(scene);
     }
 }
 
@@ -361,7 +373,7 @@ void Renderer::bindShadowMaps(GraphicsShader& shader)
 
 void Renderer::renderBasePass(const scene::Scene& scene)
 {
-    const scene::Camera* cam = scene.getCamera();
+    const scene::Camera* cam = scene.getActiveCamera();
     if (!cam)
     {
         std::cerr << "renderer: no camera set in scene\n";

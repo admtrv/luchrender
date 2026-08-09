@@ -8,6 +8,10 @@ uniform mat4 uViewProj;      // P * V
 uniform float uNear;
 uniform float uFar;
 
+uniform vec3 uAxisXColor;
+uniform vec3 uAxisYColor;
+uniform vec3 uAxisZColor;
+
 vec3 unproject(vec2 t, float z)
 {
     vec4 p = uInvViewProj * vec4(t * 2.0 - 1.0, z, 1.0);
@@ -98,9 +102,9 @@ void main()
 
     const float thicknessPx = 1.0;
 
-    AxisHit X = evalAxis(pNear, d, tMax, vec3(1,0,0), vec3(1,0,0), thicknessPx);
-    AxisHit Y = evalAxis(pNear, d, tMax, vec3(0,1,0), vec3(0,1,0), thicknessPx);
-    AxisHit Z = evalAxis(pNear, d, tMax, vec3(0,0,1), vec3(0,0,1), thicknessPx);
+    AxisHit X = evalAxis(pNear, d, tMax, vec3(1,0,0), uAxisXColor, thicknessPx);
+    AxisHit Y = evalAxis(pNear, d, tMax, vec3(0,1,0), uAxisYColor, thicknessPx);
+    AxisHit Z = evalAxis(pNear, d, tMax, vec3(0,0,1), uAxisZColor, thicknessPx);
 
     float bestA = 0.0;
     float bestDepth = 1.0;
