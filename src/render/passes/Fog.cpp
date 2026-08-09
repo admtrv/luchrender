@@ -4,6 +4,8 @@
 
 #include "Fog.h"
 
+#include "render/Renderer.h"
+
 namespace BulletRender {
 namespace render {
 
@@ -41,7 +43,7 @@ void Fog::render(const scene::Scene& scene)
     }
 
     glm::mat4 view = cam->getView();
-    glm::mat4 proj = cam->getProj(scene.getAspect());
+    glm::mat4 proj = cam->getProj(Renderer::getAspect());
 
     GLboolean depthEnabled = glIsEnabled(GL_DEPTH_TEST);
     glDisable(GL_DEPTH_TEST);

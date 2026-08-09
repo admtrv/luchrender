@@ -54,6 +54,8 @@ public:
     static FrameBuffer* getSceneFrameBuffer() { return s_sceneFbo.get(); }
     static const RenderConfig& getConfig() { return s_config; }
 
+    static float getAspect();
+
 private:
     static void renderBasePass(const scene::Scene& scene);
     static void renderShadowPass(const scene::Scene& scene);
@@ -68,6 +70,9 @@ private:
     static std::shared_ptr<GraphicsShader> s_shadowShader;
 
     static RenderConfig s_config;
+
+    static int s_viewportWidth;
+    static int s_viewportHeight;
 };
 
 

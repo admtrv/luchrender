@@ -4,6 +4,8 @@
 
 #include "SkyBox.h"
 
+#include "render/Renderer.h"
+
 #include "scene/Camera.h"
 
 namespace BulletRender {
@@ -76,7 +78,7 @@ void SkyBox::render(const scene::Scene& scene)
 
     m_shader->bind();
     m_shader->setMat4("uView", cam->getView());
-    m_shader->setMat4("uProj", cam->getProj(scene.getAspect()));
+    m_shader->setMat4("uProj", cam->getProj(Renderer::getAspect()));
     m_cubemap->bind(0);
     m_shader->setInt("uSkybox", 0);
 

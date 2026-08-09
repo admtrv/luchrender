@@ -11,6 +11,9 @@
 namespace BulletRender {
 namespace scene {
 
+// squared length below this carries no direction
+constexpr float LENGTH2_EPSILON = 1e-20f;
+
 // key for unique vertex - triplet of position, normal and uv indices
 struct VNKey {
     int vertexIdx = -1;
@@ -39,7 +42,7 @@ static glm::vec3 safeNormalize(const glm::vec3& vector)
 {
     float len2 = glm::dot(vector, vector);
 
-    if (len2 <= 1e-20f)
+    if (len2 <= LENGTH2_EPSILON)
     {
         return glm::vec3(0.0f, 0.0f, 1.0f);
     }

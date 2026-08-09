@@ -127,6 +127,11 @@ void Shader::setMat4(const char* name, const glm::mat4& mat) const
     glUniformMatrix4fv(uniformLoc(name), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
+void Shader::setMat3(const char* name, const glm::mat3& mat) const
+{
+    glUniformMatrix3fv(uniformLoc(name), 1, GL_FALSE, glm::value_ptr(mat));
+}
+
 void Shader::setVec3(const char* name, const glm::vec3& vec) const
 {
     glUniform3fv(uniformLoc(name), 1, &vec.x);

@@ -5,206 +5,112 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+#include <algorithm>
+#include <vector>
 
 namespace BulletRender {
 namespace scene {
 
-// for now just wcs
+// reference frame of operation
+enum class Space {
+    Local,
+    World
+};
+
+// affine transform with parent-child hierarchy, M = T * R * S
 class Transform {
 public:
-    Transform() : m_position(0.0f), m_rotation(0.0f), m_scale(1.0f), m_matrix(1.0f) {}
+    Transform() = default;
+    ~Transform();
 
-    // rebuild matrix from components
-    void rebuildMatrix()
-    {
-        glm::mat4 I(1.0f);
-        glm::mat4 T = glm::translate(I, m_position);
-        glm::mat4 Rx = glm::rotate(I, m_rotation.x, glm::vec3(1,0,0));
-        glm::mat4 Ry = glm::rotate(I, m_rotation.y, glm::vec3(0,1,0));
-        glm::mat4 Rz = glm::rotate(I, m_rotation.z, glm::vec3(0,0,1));
-        glm::mat4 S  = glm::scale(I, m_scale);
+    // parent and children reference each other by address, copying would alias them
+    Transform(const Transform&) = delete;
+    Transform& operator=(const Transform&) = delete;
 
-        // M = T * Rz * Ry * Rx * S
-        m_matrix = T * Rz * Ry * Rx * S;
-    }
+    // hierarchy
 
-    // direct matrix operations
-    const glm::mat4& getMatrix() const { return m_matrix; }
-    void setMatrix(const glm::mat4& mat) { m_matrix = mat; }
+    void setParent(Transform* parent, bool keepWorld = true);   // nullptr detaches, keepWorld preserves the current world pose
+    Transform* getParent() const;
 
-    // position
-    void setPosition(const glm::vec3& pos)
-    {
-        m_position = pos;
-        rebuildMatrix();
-    }
+    void addChild(Transform* child, bool keepWorld = true);     // same as child->setParent(this)
+    const std::vector<Transform*>& getChildren() const;
 
-    glm::vec3 getPosition() const
-    {
-        return m_position;
-    }
+    // local pose
 
-    // scale
-    void setScale(const glm::vec3& scale)
-    {
-        m_scale = scale;
-        rebuildMatrix();
-    }
+    void setLocalPose(const glm::vec3& pos, const glm::quat& rot, const glm::vec3& scl);
 
-    glm::vec3 getScale() const
-    {
-        return m_scale;
-    }
+    void setLocalPosition(const glm::vec3& pos);
+    glm::vec3 getLocalPosition() const;
 
-    // rotation (in radians)
-    void setRotation(const glm::vec3& rotation)
-    {
-        m_rotation = rotation;
-        rebuildMatrix();
-    }
+    void setLocalRotation(const glm::quat& rot);
+    glm::quat getLocalRotation() const;
 
-    glm::vec3 getRotation() const
-    {
-        return m_rotation;
-    }
+    void setLocalScale(const glm::vec3& scl);
+    void setLocalScale(float scl);
+    glm::vec3 getLocalScale() const;
 
-    // apply transformations
+    // world pose
 
-    // translate
-    void translate(const glm::vec3& delta)
-    {
-        m_position += delta;
-        rebuildMatrix();
-    }
+    void setPosition(const glm::vec3& pos);
+    glm::vec3 getPosition() const;
 
-    // rotate
-    void rotate(const glm::vec3& axis, float angleRad)
-    {
-        // convert axis-angle to euler angles and add
-        glm::quat q = glm::angleAxis(angleRad, axis);
-        glm::quat currentQ = glm::quat(glm::mat3(
-            glm::rotate(glm::mat4(1.0f), m_rotation.x, glm::vec3(1,0,0)) *
-            glm::rotate(glm::mat4(1.0f), m_rotation.y, glm::vec3(0,1,0)) *
-            glm::rotate(glm::mat4(1.0f), m_rotation.z, glm::vec3(0,0,1))
-        ));
-        glm::quat newQ = q * currentQ;
-        m_rotation = glm::eulerAngles(newQ);
-        rebuildMatrix();
-    }
+    void setRotation(const glm::quat& rot);
+    glm::quat getRotation() const;
 
-    void rotateX(const float angleRad)
-    {
-        // rotate around world X axis
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angleRad, glm::vec3(1,0,0));
-        m_matrix = rotation * m_matrix;
-    }
+    // matrices
 
-    void rotateY(const float angleRad)
-    {
-        // rotate around world Y axis
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angleRad, glm::vec3(0,1,0));
-        m_matrix = rotation * m_matrix;
-    }
+    void setLocalMatrix(const glm::mat4& mat);
+    const glm::mat4& getLocalMatrix() const;
 
-    void rotateZ(const float angleRad)
-    {
-        // rotate around world Z axis
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angleRad, glm::vec3(0,0,1));
-        m_matrix = rotation * m_matrix;
-    }
+    void setMatrix(const glm::mat4& mat);
+    const glm::mat4& getMatrix() const;
 
-    void scale(const glm::vec3& scl)
-    {
-        m_scale *= scl;
-        rebuildMatrix();
-    }
+    glm::mat3 getNormalMatrix() const;          // inverse-transpose of the upper 3x3, survives non-uniform scale
 
-    void scale(const float factor)
-    {
-        m_scale *= factor;
-        rebuildMatrix();
-    }
+    // operations
 
-    void setIdentity()
-    {
-        m_position = glm::vec3(0.0f);
-        m_rotation = glm::vec3(0.0f);
-        m_scale = glm::vec3(1.0f);
-        m_matrix = glm::mat4(1.0f);
-    }
+    void translate(const glm::vec3& delta, Space space = Space::Local);
 
-    // build from components
-    void setFromComponents(const glm::vec3& pos, const glm::vec3& anglesRad, const glm::vec3& scl)
-    {
-        m_position = pos;
-        m_rotation = anglesRad;
-        m_scale = scl;
-        rebuildMatrix();
-    }
+    void rotate(const glm::quat& rot, Space space = Space::Local);
+    void rotate(const glm::vec3& axis, float angleRad, Space space = Space::Local);
 
-    // apply another transform
-    void applyTransform(const glm::mat4& rhs)
-    {
-        m_matrix = m_matrix * rhs;
-    }
+    void scale(const glm::vec3& factor);
+    void scale(float factor);
 
-    void rotateFromDirection(const glm::vec3& fromDir, const glm::vec3& toDir)
-    {
-        glm::vec3 from = glm::normalize(fromDir);
-        glm::vec3 to = glm::normalize(toDir);
+    void reset();
 
-        // check if directions are same
-        if (glm::length2(from - to) < 1e-6f)
-        {
-            return; // already pointing same direction
-        }
-
-        // check if directions are opposite
-        if (glm::length2(from + to) < 1e-6f)
-        {
-            glm::vec3 axis;
-            if (glm::abs(from.x) < 0.9f)
-            {
-                axis = glm::vec3(1.0f, 0.0f, 0.0f);
-            }
-            else
-            {
-                axis = glm::vec3(0.0f, 1.0f, 0.0f);
-            }
-
-            axis = glm::normalize(glm::cross(from, axis));
-            rotate(axis, glm::pi<float>());
-            return;
-        }
-
-        // compute rotation from to
-        glm::quat q = glm::rotation(from, to);
-        glm::mat4 R = glm::toMat4(q);
-
-        // extract rotation as euler angles
-        glm::quat quat = glm::quat_cast(R);
-        m_rotation = glm::eulerAngles(quat);
-        rebuildMatrix();
-    }
-
-    // get rotation axes from matrix (x, y, z axes of local coordinate system)
-    void getAxes(glm::vec3& outX, glm::vec3& outY, glm::vec3& outZ) const
-    {
-        outX = glm::vec3(m_matrix[0]);
-        outY = glm::vec3(m_matrix[1]);
-        outZ = glm::vec3(m_matrix[2]);
-    }
+    // local axes in world space
+    glm::vec3 getRight() const;
+    glm::vec3 getUp() const;
+    glm::vec3 getForward() const;
 
 private:
-    glm::vec3 m_position;
-    glm::vec3 m_rotation;
-    glm::vec3 m_scale;
-    glm::mat4 m_matrix;
+    void invalidateLocal();     // marks local matrix and whole subtree as outdated
+    void invalidateWorld();     // marks world matrices of this node and of subtree as outdated
 
-    // Transform* m_parent{nullptr};
+    void updateLocal() const;
+    void updateWorld() const;
+
+    void detachFromParent();
+    bool isAncestorOf(const Transform& node) const;
+
+    glm::vec3 m_position{0.0f};
+    glm::quat m_rotation{1.0f, 0.0f, 0.0f, 0.0f};
+    glm::vec3 m_scale{1.0f};
+
+    Transform* m_parent = nullptr;
+    std::vector<Transform*> m_children;
+
+    mutable glm::mat4 m_local{1.0f};
+    mutable glm::mat4 m_world{1.0f};
+
+    mutable bool m_localDirty = false;
+    mutable bool m_worldDirty = false;
 };
 
 } // namespace scene

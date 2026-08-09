@@ -9,6 +9,9 @@
 namespace BulletRender {
 namespace scene {
 
+// dot product above this means direction is collinear with up
+constexpr float COLLINEAR_DOT = 0.999f;
+
 // Light
 
 void Light::setColor(const glm::vec3& c)
@@ -85,7 +88,7 @@ glm::mat4 DirectionalLight::getViewProj() const
     glm::vec3 eye = m_shadowTarget + m_direction * dist;
 
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    if (glm::abs(glm::dot(m_direction, up)) > 0.99f)
+    if (glm::abs(glm::dot(m_direction, up)) > COLLINEAR_DOT)
     {
         up = glm::vec3(0.0f, 0.0f, 1.0f);
     }
@@ -189,7 +192,7 @@ glm::mat4 SpotLight::getViewProj() const
     glm::vec3 target = m_position + m_direction;
 
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    if (glm::abs(glm::dot(m_direction, up)) > 0.99f)
+    if (glm::abs(glm::dot(m_direction, up)) > COLLINEAR_DOT)
     {
         up = glm::vec3(0.0f, 0.0f, 1.0f);
     }

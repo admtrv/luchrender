@@ -10,14 +10,13 @@
 #include "Light.h"
 #include "render/Material.h"
 
-#include <glm/glm.hpp>
-
 #include <vector>
 #include <memory>
 
 namespace BulletRender {
 namespace scene {
 
+// draw item
 class SceneObject {
 public:
     SceneObject(Model* model = nullptr) : m_model(model) {}
@@ -31,40 +30,40 @@ public:
     render::Material& getMaterial() { return m_material; }
     const render::Material& getMaterial() const { return m_material; }
 
+    // hierarchy shortcuts
+    void setParent(SceneObject* parent, bool keepWorld = true);
+    void addChild(SceneObject* child, bool keepWorld = true);
+
 private:
     Model* m_model;
     Transform m_transform;
     render::Material m_material;
 };
 
+
+// everything single frame needs
 class Scene {
 public:
-    Scene() = default;
-    ~Scene() = default;
-
+    // objects
     SceneObject* addObject(Model* model);
     void removeObject(size_t index);
-    const std::vector<std::unique_ptr<SceneObject>>& getObjects() const { return m_objects; };
-    void clear();
+    void clearObjects() { m_objects.clear(); }
+    const std::vector<std::unique_ptr<SceneObject>>& getObjects() const { return m_objects; }
 
-    void addLight(const Light* light) { m_lights.push_back(light); }
+    // light
+    void addLight(const Light* light);
     void removeLight(size_t index);
     void clearLights() { m_lights.clear(); }
     const std::vector<const Light*>& getLights() const { return m_lights; }
 
+    // camera
     void setCamera(const Camera* cam) { m_camera = cam; }
-    void setAspect(float aspect) { m_aspect = aspect; }
-
     const Camera* getCamera() const { return m_camera; }
-    float getAspect() const { return m_aspect; }
 
 private:
-    std::vector<std::unique_ptr<SceneObject>> m_objects;
-    std::vector<const Light*> m_lights;
-
+    std::vector<std::unique_ptr<SceneObject>> m_objects;    // scene owns its objects
+    std::vector<const Light*> m_lights;                     // scene does not own lights and camera
     const Camera* m_camera = nullptr;
-
-    float m_aspect = 1.0f;
 };
 
 } // namespace scene

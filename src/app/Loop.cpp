@@ -46,7 +46,6 @@ void Loop::run(const std::function<void(float)>& update)
         int fbh;
         Window::getSize(fbw, fbh);
         render::Renderer::resizeViewport(fbw, fbh);
-        m_scene.setAspect(fbh > 0 ? float(fbw) / float(fbh) : 1.0f);
 
         const glm::vec4& clearColor = render::Renderer::getConfig().backgroundColor;
         render::Renderer::clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);

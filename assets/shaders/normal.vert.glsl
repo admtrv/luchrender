@@ -5,6 +5,7 @@ layout (location=1) in vec3 aNor;
 layout (location=2) in vec2 aUv;
 
 uniform mat4 uModel;
+uniform mat3 uNormalMatrix;
 uniform mat4 uView;
 uniform mat4 uProj;
 
@@ -17,8 +18,7 @@ void main()
     vec4 worldPos = uModel * vec4(aPos, 1.0);
     vWorldPos = worldPos.xyz;
 
-    mat3 nmat = mat3(uModel);
-    vNor = normalize(nmat * aNor);
+    vNor = normalize(uNormalMatrix * aNor);
     vUv = aUv;
 
     gl_Position = uProj * uView * worldPos;

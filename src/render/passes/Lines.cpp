@@ -4,6 +4,8 @@
 
 #include "Lines.h"
 
+#include "render/Renderer.h"
+
 namespace BulletRender {
 namespace render {
 
@@ -94,7 +96,7 @@ void Lines::render(const scene::Scene& scene)
 
     // shader
     glm::mat4 view = cam->getView();
-    glm::mat4 proj = cam->getProj(scene.getAspect());
+    glm::mat4 proj = cam->getProj(Renderer::getAspect());
 
     m_prog->bind();
     m_prog->setMat4("uView", view);

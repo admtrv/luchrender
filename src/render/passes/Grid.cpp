@@ -4,6 +4,8 @@
 
 #include "Grid.h"
 
+#include "render/Renderer.h"
+
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glad/glad.h>
 
@@ -38,7 +40,7 @@ void Grid::render(const scene::Scene& scene)
     }
 
     glm::mat4 view = cam->getView();
-    glm::mat4 proj = cam->getProj(scene.getAspect());
+    glm::mat4 proj = cam->getProj(Renderer::getAspect());
 
     // depth
     GLboolean depthEnabled = glIsEnabled(GL_DEPTH_TEST);

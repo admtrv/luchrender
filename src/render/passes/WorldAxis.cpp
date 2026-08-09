@@ -4,6 +4,8 @@
 
 #include "WorldAxis.h"
 
+#include "render/Renderer.h"
+
 #include <iostream>
 
 #include <glm/mat4x4.hpp>
@@ -41,7 +43,7 @@ void WorldAxis::render(const scene::Scene& scene)
     }
 
     glm::mat4 view = cam->getView();
-    glm::mat4 proj = cam->getProj(scene.getAspect());
+    glm::mat4 proj = cam->getProj(Renderer::getAspect());
 
     GLboolean depthEnabled = glIsEnabled(GL_DEPTH_TEST);
     if (!depthEnabled)

@@ -15,6 +15,8 @@ std::unique_ptr<DepthFrameBuffer> Renderer::s_dirShadowFbo;
 std::vector<std::unique_ptr<DepthFrameBuffer>> Renderer::s_spotShadowFbos;
 std::shared_ptr<GraphicsShader> Renderer::s_shadowShader;
 RenderConfig Renderer::s_config;
+int Renderer::s_viewportWidth = 1;
+int Renderer::s_viewportHeight = 1;
 
 static constexpr int DIR_SHADOW_SIZE = 2048;
 static constexpr int SPOT_SHADOW_SIZE = 1024;
@@ -163,11 +165,20 @@ void Renderer::clear(float r, float g, float b, float a)
 
 void Renderer::resizeViewport(int width, int height)
 {
+    s_viewportWidth = width;
+    s_viewportHeight = height;
+
     glViewport(0, 0, width, height);
     if (s_sceneFbo)
     {
         s_sceneFbo->resize(width, height);
     }
+}
+
+float Renderer::getAspect()
+{
+    // minimized window reports zero height, square keeps the projection finite
+    return s_viewportHeight > 0 ? float(s_viewportWidth) / float(s_viewportHeight) : 1.0f;
 }
 
 void Renderer::registerPrePass(std::shared_ptr<IRenderPass> pass)
@@ -397,8 +408,9 @@ void Renderer::renderBasePass(const scene::Scene& scene)
 
             shader->bind();
             shader->setMat4("uView", cam->getView());
-            shader->setMat4("uProj", cam->getProj(scene.getAspect()));
+            shader->setMat4("uProj", cam->getProj(Renderer::getAspect()));
             shader->setMat4("uModel", object->getTransform().getMatrix());
+            shader->setMat3("uNormalMatrix", object->getTransform().getNormalMatrix());
             shader->setVec3("uCameraPos", cam->getPosition());
             applyLights(*shader, lights);
             bindShadowMaps(*shader);

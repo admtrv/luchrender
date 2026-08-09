@@ -18,6 +18,8 @@
 #include "scene/Camera.h"
 #include "scene/Light.h"
 
+#include <cmath>
+
 using namespace BulletRender;
 
 int main()
@@ -41,9 +43,11 @@ int main()
     auto worldAxis = std::make_shared<render::WorldAxis>();
     render::Renderer::registerPrePass(worldAxis);
 
+/*
     // lines
     auto lines = std::make_shared<render::Lines>();
     render::Renderer::registerPrePass(lines);
+*/
 
     // assets
     scene::Model foxModel("assets/models/fox/fox.obj");
@@ -125,17 +129,20 @@ int main()
     scene::SceneObject* foxMtl = scene.addObject(&foxModel);
     foxMtl->getMaterial().setShader(shader);
     foxMtl->getTransform().setPosition({-5.0f, 0.0f, 0.0f});
+    floor->addChild(foxMtl);
 
     // fox with color
     scene::SceneObject* foxColor = scene.addObject(&foxModel);
     foxColor->getMaterial().setShader(shader);
     foxColor->getTransform().setPosition({0.0f, 0.0f, 0.0f});
     foxColor->getMaterial().setColor({1.0f, 0.5f, 0.0f});
+    floor->addChild(foxColor);
 
     // backpack with automatic textures
     scene::SceneObject* backpackTexture = scene.addObject(&backpackModel);
     backpackTexture->getMaterial().setShader(shader);
     backpackTexture->getTransform().setPosition({5.0f, 1.5f, 0.0f});
+    floor->addChild(backpackTexture);
 
     // teapot with texture
     auto metalTexture = render::TextureLoader::instance().load("assets/textures/metal.jpg");
@@ -143,15 +150,20 @@ int main()
     teapotFileTexture->getMaterial().setShader(shader);
     teapotFileTexture->getMaterial().setTexture("uAlbedo", metalTexture, 0);
     teapotFileTexture->getTransform().setPosition({12.0f, 1.5f, 0.0f});
-    teapotFileTexture->getTransform().setScale({0.2f, 0.2f, 0.2f});
+    teapotFileTexture->getTransform().setLocalScale(0.2f);
+    floor->addChild(teapotFileTexture);
 
     // loop
+    float elapsed = 0.0f;
     app::Loop loop(scene);
     loop.run(
         [&](float dt) {
             camera.update(app::Window::get(), dt);
-            lines->setThickness(5.0f);
-            lines->addLine({-5.0f, 5.0f, -5.0f}, {5.0f, 5.0f, -5.0f}, {1.0f, 1.0f, 1.0f});
+            elapsed += dt;
+
+            //lines->setThickness(5.0f);
+            //lines->addLine({-5.0f, 5.0f, -5.0f}, {5.0f, 5.0f, -5.0f}, {1.0f, 1.0f, 1.0f});
+            floor->getTransform().setPosition({3.5f, -0.15f + 0.5f * std::sin(elapsed), 0.0f});
         }
     );
 
