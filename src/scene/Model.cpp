@@ -6,6 +6,8 @@
 
 #include "render/textures/TextureLoader.h"
 
+#include <glm/gtc/constants.hpp>
+
 #include <filesystem>
 
 namespace BulletRender {
@@ -358,6 +360,76 @@ Box::Box(float sizeX, float sizeY, float sizeZ)
         indices.push_back(base + 0);
         indices.push_back(base + 2);
         indices.push_back(base + 3);
+    }
+
+    addMesh(vertices, indices, -1);
+}
+
+unsigned Model::getVertexCount() const
+{
+    unsigned count = 0;
+    for (const Mesh& mesh : m_meshes)
+    {
+        count += mesh.getVertexCount();
+    }
+    return count;
+}
+
+unsigned Model::getTriangleCount() const
+{
+    unsigned count = 0;
+    for (const Mesh& mesh : m_meshes)
+    {
+        count += mesh.getTriangleCount();
+    }
+    return count;
+}
+
+Sphere::Sphere() : Sphere(0.5f, 32, 16) {}
+
+Sphere::Sphere(float radius, int segments, int rings)
+{
+    std::vector<Vertex> vertices;
+    std::vector<unsigned> indices;
+
+    // uv sphere, ring 0 is north pole and ring "rings" south one
+    for (int ring = 0; ring <= rings; ring++)
+    {
+        const float v = static_cast<float>(ring) / static_cast<float>(rings);
+        const float phi = v * glm::pi<float>();
+
+        for (int segment = 0; segment <= segments; segment++)
+        {
+            const float u = static_cast<float>(segment) / static_cast<float>(segments);
+            const float theta = u * glm::two_pi<float>();
+
+            // unit sphere point doubles as normal
+            const glm::vec3 normal = {
+                std::sin(phi) * std::cos(theta),
+                std::cos(phi),
+                std::sin(phi) * std::sin(theta)
+            };
+
+            vertices.push_back({normal * radius, normal, {u, 1.0f - v}});
+        }
+    }
+
+    const int stride = segments + 1;
+    for (int ring = 0; ring < rings; ring++)
+    {
+        for (int segment = 0; segment < segments; segment++)
+        {
+            const unsigned current = static_cast<unsigned>(ring * stride + segment);
+            const unsigned next = static_cast<unsigned>(current + stride);
+
+            indices.push_back(current);
+            indices.push_back(current + 1);
+            indices.push_back(next);
+
+            indices.push_back(current + 1);
+            indices.push_back(next + 1);
+            indices.push_back(next);
+        }
     }
 
     addMesh(vertices, indices, -1);

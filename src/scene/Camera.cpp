@@ -55,7 +55,8 @@ FlyCamera::FlyCamera(glm::vec3 pos,
         float zFar,
         float mouseSensitivity,
         bool lockCursor)
-    : m_pos(pos)
+    : Camera("Fly Camera")
+    , m_pos(pos)
     , m_yaw(yaw)
     , m_pitch(pitch)
     , m_fovDeg(fovDeg)
@@ -225,7 +226,8 @@ void FlyCamera::update(GLFWwindow* win, float dt)
 // OrbitCamera
 
 OrbitCamera::OrbitCamera(glm::vec3 target, float radius, float fovDeg, float zNear, float zFar)
-    : m_target(target), m_radius(radius), m_fovDeg(fovDeg), m_zNear(zNear), m_zFar(zFar)
+    : Camera("Orbit Camera"),
+      m_target(target), m_radius(radius), m_fovDeg(fovDeg), m_zNear(zNear), m_zFar(zFar)
 {}
 
 glm::vec3 OrbitCamera::getPosition() const
@@ -236,6 +238,12 @@ glm::vec3 OrbitCamera::getPosition() const
         m_radius * std::cos(e),
         m_radius * std::sin(e) * std::sin(m_azimuth)
     );
+}
+
+void OrbitCamera::setPosition(const glm::vec3& pos)
+{
+    // orbit itself unchanged, whole rig slides so eye lands on pos
+    m_target += pos - getPosition();
 }
 
 glm::mat4 OrbitCamera::getView() const

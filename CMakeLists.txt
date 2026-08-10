@@ -26,6 +26,10 @@ list(FILTER SOURCES EXCLUDE REGEX ".*/.*build.*/.*")
 list(FILTER SOURCES EXCLUDE REGEX ".*/main\\.cpp$")
 list(FILTER SOURCES EXCLUDE REGEX ".*/external/.*")
 
+# editor interface belongs to standalone tool
+file(GLOB_RECURSE EDITOR_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/interface/*.cpp")
+list(REMOVE_ITEM SOURCES ${EDITOR_SOURCES})
+
 # render library
 add_library(${LIB_NAME} STATIC ${SOURCES})
 target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -86,7 +90,7 @@ set(BIN_NAME Demo)
 option(BULLET_RENDER_BUILD_APP "build standalone app with local main.cpp" ${_default_app})
 
 if(BULLET_RENDER_BUILD_APP)
-    add_executable(${BIN_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+    add_executable(${BIN_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${EDITOR_SOURCES})
     target_link_libraries(${BIN_NAME} PRIVATE ${LIB_NAME})
     set_target_properties(${BIN_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 

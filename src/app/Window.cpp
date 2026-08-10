@@ -30,6 +30,7 @@ static void preferHighPerfGpuHint()
 
 GLFWwindow *Window::s_Window = nullptr;
 double Window::s_scrollAccum = 0.0;
+bool Window::s_vsync = false;
 
 void Window::scrollCallback(GLFWwindow*, double /*xoffset*/, double yoffset)
 {
@@ -76,7 +77,7 @@ bool Window::init(const WindowConfig& cfg)
 
     glfwSetScrollCallback(s_Window, scrollCallback);
 
-    glfwSwapInterval(cfg.vsync ? 1 : 0);
+    setVSync(cfg.vsync);
 
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
     {
@@ -129,6 +130,12 @@ GLFWwindow *Window::get()
 void Window::getSize(int& width, int& height)
 {
     glfwGetFramebufferSize(s_Window, &width, &height);
+}
+
+void Window::setVSync(bool enabled)
+{
+    s_vsync = enabled;
+    glfwSwapInterval(enabled ? 1 : 0);
 }
 
 } // namespace app

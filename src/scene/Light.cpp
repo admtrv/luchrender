@@ -46,7 +46,7 @@ bool Light::getCastsShadow() const
 
 // DirectionalLight
 
-DirectionalLight::DirectionalLight(glm::vec3 dir) : m_direction(glm::normalize(dir))
+DirectionalLight::DirectionalLight(glm::vec3 dir) : Light("Directional Light"), m_direction(glm::normalize(dir))
 {
     m_castsShadow = true;
 }
@@ -102,7 +102,7 @@ glm::mat4 DirectionalLight::getViewProj() const
 
 // PointLight
 
-PointLight::PointLight(glm::vec3 pos, float range) : m_position(pos), m_range(range) {}
+PointLight::PointLight(glm::vec3 pos, float range) : Light("Point Light"), m_position(pos), m_range(range) {}
 
 void PointLight::setPosition(const glm::vec3& p)
 {
@@ -127,7 +127,8 @@ float PointLight::getRange() const
 // SpotLight
 
 SpotLight::SpotLight(glm::vec3 pos, glm::vec3 dir, float innerDeg, float outerDeg, float range)
-    : m_position(pos),
+    : Light("Spot Light"),
+      m_position(pos),
       m_direction(glm::normalize(dir)),
       m_innerCos(glm::cos(glm::radians(innerDeg))),
       m_outerCos(glm::cos(glm::radians(outerDeg))),

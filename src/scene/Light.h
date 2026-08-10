@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Named.h"
+
 #include <glm/glm.hpp>
 
 namespace BulletRender {
@@ -17,8 +19,9 @@ enum class LightType {
 };
 
 // base light
-class Light {
+class Light : public Named {
 public:
+    explicit Light(std::string name = "Light") : Named(std::move(name)) {}
     virtual ~Light() = default;
     virtual LightType getType() const = 0;
 
@@ -31,15 +34,21 @@ public:
     void setCastsShadow(bool v);
     bool getCastsShadow() const;
 
+    void setVisible(bool visible) { m_visible = visible; }
+    bool isVisible() const { return m_visible; }
+
 protected:
     glm::vec3 m_color = glm::vec3(1.0f);
     float m_intensity = 1.0f;
     bool m_castsShadow = false;
+    bool m_visible = true;
 };
 
 // global fill light
 class AmbientLight : public Light {
 public:
+    AmbientLight() : Light("Ambient Light") {}
+
     LightType getType() const override { return LightType::Ambient; }
 };
 

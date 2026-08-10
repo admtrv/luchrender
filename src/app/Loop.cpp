@@ -4,8 +4,30 @@
 
 #include "Loop.h"
 
+#include <chrono>
+#include <thread>
+
 namespace BulletRender {
 namespace app {
+
+int Loop::s_frameRateLimit = 0;
+
+void Loop::waitForFrameLimit(double frameStart)
+{
+    // vsync already paces swap, second limiter would add stutter
+    if (s_frameRateLimit <= 0 || Window::getVSync())
+    {
+        return;
+    }
+
+    const double target = 1.0 / static_cast<double>(s_frameRateLimit);
+    const double remaining = target - (utils::timeSeconds() - frameStart);
+
+    if (remaining > 0.0)
+    {
+        std::this_thread::sleep_for(std::chrono::duration<double, std::ratio<1>>(remaining));
+    }
+}
 
 Loop::Loop(scene::Scene& scene) : m_scene(scene)
 {
@@ -28,9 +50,15 @@ void Loop::run(const std::function<void(float)>& update)
 
     while (!Window::shouldClose())
     {
+        const double frameStart = utils::timeSeconds();
         float dt = timer.tick();
 
         Window::pollEvents();
+
+        if (m_beforeFrame)
+        {
+            m_beforeFrame();
+        }
 
         // ImGui new frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -56,6 +84,8 @@ void Loop::run(const std::function<void(float)>& update)
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         Window::swapBuffers();
+
+        waitForFrameLimit(frameStart);
     }
 
     // cleanup ImGui

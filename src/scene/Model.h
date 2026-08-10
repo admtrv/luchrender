@@ -29,6 +29,9 @@ public:
 
     const std::vector<Mesh>& getMeshes() const { return m_meshes; }
 
+    unsigned getVertexCount() const;
+    unsigned getTriangleCount() const;
+
     const std::vector<std::shared_ptr<render::Material>>& getMaterials() const { return m_materials; }
     int getMeshMaterialIndex(size_t meshIdx) const;
 
@@ -53,6 +56,12 @@ class Box : public Model {
 public:
     Box();
     Box(float sizeX, float sizeY, float sizeZ);
+};
+
+class Sphere : public Model {
+public:
+    Sphere();
+    Sphere(float radius, int segments, int rings);
 };
 
 } // namespace scene

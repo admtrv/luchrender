@@ -25,9 +25,16 @@ public:
     void drawScene(const scene::Scene& scene);
 
     void setShowTransforms(bool v) { m_showTransforms = v; }
+    bool getShowTransforms() const { return m_showTransforms; }
+
     void setShowLights(bool v) { m_showLights = v; }
+    bool getShowLights() const { return m_showLights; }
+
     void setShowBounds(bool v) { m_showBounds = v; }
+    bool getShowBounds() const { return m_showBounds; }
+
     void setShowCameras(bool v) { m_showCameras = v; }
+    bool getShowCameras() const { return m_showCameras; }
 
 private:
     // gizmos
@@ -53,7 +60,7 @@ private:
 
     bool m_showTransforms = true;
     bool m_showLights = true;
-    bool m_showBounds = false;
+    bool m_showBounds = true;
     bool m_showCameras = true;
 };
 

@@ -4,30 +4,25 @@
 
 #include "app/Window.h"
 #include "app/Loop.h"
+#include "interface/Editor.h"
 #include "render/passes/WorldAxis.h"
 #include "render/passes/Grid.h"
 #include "render/passes/Lines.h"
 #include "render/passes/Fog.h"
-#include "render/passes/SkyBox.h"
 #include "render/Renderer.h"
 #include "render/DebugDraw.h"
 #include "render/Shader.h"
-#include "render/textures/TextureLoader.h"
-#include "render/textures/CubeMap.h"
 #include "scene/Scene.h"
-#include "scene/Model.h"
 #include "scene/Camera.h"
 #include "scene/Light.h"
 #include "utils/Input.h"
-
-#include <cmath>
 
 using namespace BulletRender;
 
 int main()
 {
     // window
-    app::WindowConfig windowCfg{800, 600, "Demo", true, true};
+    app::WindowConfig windowCfg{1600, 900, "BulletRender", true, true};
     if (!app::Window::init(windowCfg))
     {
         return -1;
@@ -41,7 +36,7 @@ int main()
     auto grid = std::make_shared<render::Grid>();
     render::Renderer::registerPrePass(grid);
 
-    // world coordinated
+    // world coordinates
     auto worldAxis = std::make_shared<render::WorldAxis>();
     render::Renderer::registerPrePass(worldAxis);
 
@@ -50,151 +45,75 @@ int main()
     lines->setDepthTest(false);
     render::Renderer::registerOverlayPass(lines);
 
-    // debug gizmos
-    render::DebugDraw debug(lines);
-    debug.setShowBounds(true);
-
-    // assets
-    scene::Model foxModel("assets/models/fox/fox.obj");
-    scene::Model backpackModel("assets/models/backpack/backpack.obj");
-    scene::Model teapotModel("assets/models/teapot/teapot.obj");
-    std::shared_ptr<render::GraphicsShader> shader = std::make_shared<render::GraphicsShader>(
-        "assets/shaders/normal.vert.glsl",
-        "assets/shaders/normal.frag.glsl"
-    );
-
-/*
-    std::shared_ptr<render::CubeMap> sky = std::make_shared<render::CubeMap>(std::array<std::string, 6>{
-        "assets/textures/skybox/right.jpg",
-        "assets/textures/skybox/left.jpg",
-        "assets/textures/skybox/top.jpg",
-        "assets/textures/skybox/bottom.jpg",
-        "assets/textures/skybox/front.jpg",
-        "assets/textures/skybox/back.jpg"
-    });
-
-    // skybox
-    auto skybox = std::make_shared<render::SkyBox>(sky);
-    render::Renderer::registerPrePass(skybox);
-
-    // or
-*/
     // fog
     auto fog = std::make_shared<render::Fog>(true, 10.0f, 90.0f);
     render::Renderer::registerPostPass(fog);
 
+    // debug gizmos
+    render::DebugDraw debug(lines);
+
+    // default shader for everything
+    auto shader = std::make_shared<render::GraphicsShader>(
+        "assets/shaders/normal.vert.glsl",
+        "assets/shaders/normal.frag.glsl"
+    );
+
     // scene
     scene::Scene scene;
 
-    // cameras:
+    // cursor starts free so panel is usable
+    scene.createCamera<scene::FlyCamera>(glm::vec3{0.0f, 2.0f, 8.0f}, -90.0f, 0.0f, 60.0f, 3.0f, 0.1f, 100.0f, 0.1f, false);
 
-    scene::FlyCamera camera({0, 1, 5});
-    scene.setActiveCamera(&camera);
+    // default scene
+    scene::AmbientLight* ambient = scene.createLight<scene::AmbientLight>();
+    ambient->setColor({0.4f, 0.45f, 0.55f});
+    ambient->setIntensity(0.3f);
 
-    scene::StaticCamera sceneCamera({-8.0f, 4.0f, 8.0f}, {0.0f, 1.0f, 0.0f});
-    scene.addCamera(&sceneCamera);
+    scene::DirectionalLight* sun = scene.createLight<scene::DirectionalLight>(glm::vec3{-0.7f, 0.7f, 0.25f});
+    sun->setColor({1.0f, 0.95f, 0.85f});
+    sun->setIntensity(0.8f);
 
-    // lights:
+    // default cube
+    scene::Model* cubeModel = scene.addModel(std::make_unique<scene::Box>(1.0f, 1.0f, 1.0f));
+    scene::SceneObject* cube = scene.addObject(cubeModel, "Cube");
+    cube->getMaterial().setShader(shader);
+    cube->getTransform().setLocalPosition({0.0f, 0.0f, 0.0f});
 
-    // global light
-    scene::AmbientLight ambient;
-    ambient.setColor({0.4f, 0.45f, 0.55f});
-    ambient.setIntensity(0.3f);
-    scene.addLight(&ambient);
+    // editor
+    interface::Editor editor(scene, debug);
+    editor.setFog(fog);
+    editor.setDefaultShader(shader);
+    editor.setShowDebug(false);
 
-    // sun
-    scene::DirectionalLight sun({-0.7f, 0.7f, 0.25f});
-    sun.setColor({1.0f, 0.95f, 0.85f});
-    sun.setIntensity(0.8f);
-    scene.addLight(&sun);
-
-    // lamp
-    scene::SpotLight spot({-5.0f, 6.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, 15.0f, 25.0f, 15.0f);
-    spot.setColor({1.0f, 1.0f, 1.0f});
-    spot.setIntensity(2.0f);
-    scene.addLight(&spot);
-
-    // blue point
-    scene::PointLight pointBlue({7.0f, 2.5f, 2.0f}, 8.0f);
-    pointBlue.setColor({0.2f, 0.4f, 1.0f});
-    pointBlue.setIntensity(4.0f);
-    scene.addLight(&pointBlue);
-
-    // pink point
-    scene::PointLight pointPink({10.0f, 2.5f, -2.0f}, 8.0f);
-    pointPink.setColor({1.0f, 0.3f, 0.7f});
-    pointPink.setIntensity(4.0f);
-    scene.addLight(&pointPink);
-
-    // objects:
-
-    // floor
-    scene::Box floorModel(40.0f, 0.2f, 20.0f);
-    scene::SceneObject* floor = scene.addObject(&floorModel);
-    floor->getMaterial().setShader(shader);
-    floor->getMaterial().setColor({0.5f, 0.5f, 0.55f});
-    floor->getTransform().setPosition({3.5f, -0.15f, 0.0f});
-
-    // fox with automatic colors from mtl
-    scene::SceneObject* foxMtl = scene.addObject(&foxModel);
-    foxMtl->getMaterial().setShader(shader);
-    foxMtl->getTransform().setPosition({-5.0f, 0.0f, 0.0f});
-    floor->addChild(foxMtl);
-
-    // fox with color
-    scene::SceneObject* foxColor = scene.addObject(&foxModel);
-    foxColor->getMaterial().setShader(shader);
-    foxColor->getTransform().setPosition({0.0f, 0.0f, 0.0f});
-    foxColor->getMaterial().setColor({1.0f, 0.5f, 0.0f});
-    floor->addChild(foxColor);
-
-    // backpack with automatic textures
-    scene::SceneObject* backpackTexture = scene.addObject(&backpackModel);
-    backpackTexture->getMaterial().setShader(shader);
-    backpackTexture->getTransform().setPosition({5.0f, 1.5f, 0.0f});
-    floor->addChild(backpackTexture);
-
-    // teapot with texture
-    auto metalTexture = render::TextureLoader::instance().load("assets/textures/metal.jpg");
-    scene::SceneObject* teapotFileTexture = scene.addObject(&teapotModel);
-    teapotFileTexture->getMaterial().setShader(shader);
-    teapotFileTexture->getMaterial().setTexture("uAlbedo", metalTexture, 0);
-    teapotFileTexture->getTransform().setPosition({12.0f, 1.5f, 0.0f});
-    teapotFileTexture->getTransform().setLocalScale(0.2f);
-    floor->addChild(teapotFileTexture);
+    // pace the frames when vsync is off
+    app::Loop::setFrameRateLimit(120);
 
     // controls
-    bool showDebug = true;
-
     utils::Input& input = utils::Input::instance();
     input.bindKey(utils::InputKey::ESCAPE, [] {
         app::Window::setShouldClose(true);
     });
     input.bindKey(utils::InputKey::G, [&] {
-        showDebug = !showDebug;
-    });
-    input.bindKey(utils::InputKey::C, [&] {
-        const bool flyActive = scene.getActiveCamera() == &camera;
-        scene.setActiveCamera(flyActive ? static_cast<scene::Camera*>(&sceneCamera) : &camera);
+        editor.toggleShowDebug();
     });
 
     // loop
-    float elapsed = 0.0f;
     app::Loop loop(scene);
+    loop.setBeforeFrame([&] { editor.beforeFrame(); });
     loop.run(
         [&](float dt) {
             input.update(app::Window::get());
 
-            if (scene.getActiveCamera() == &camera)
+            editor.draw(dt);
+
+            // panel owns input while it is being used
+            scene::Camera* camera = scene.getActiveCamera();
+            if (camera != nullptr && !editor.wantsInput())
             {
-                camera.update(app::Window::get(), dt);
+                camera->update(app::Window::get(), dt);
             }
 
-            elapsed += dt;
-
-            floor->getTransform().setPosition({3.5f, -0.15f + 0.5f * std::sin(elapsed), 0.0f});
-
-            if (showDebug)
+            if (editor.getShowDebug())
             {
                 debug.drawScene(scene);
             }

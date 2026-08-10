@@ -7,6 +7,7 @@
 #include "Colors.h"
 #include "Renderer.h"
 
+#include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace BulletRender {
@@ -57,7 +58,7 @@ void DebugDraw::drawScene(const scene::Scene& scene)
     {
         for (const auto& object : scene.getObjects())
         {
-            if (object)
+            if (object && object->isVisible())
             {
                 drawTransform(object->getTransform());
             }
@@ -68,7 +69,7 @@ void DebugDraw::drawScene(const scene::Scene& scene)
     {
         for (const auto& object : scene.getObjects())
         {
-            if (object && object->getModel())
+            if (object && object->isVisible() && object->getModel())
             {
                 drawBounds(*object->getModel(), object->getTransform().getMatrix());
             }
@@ -77,9 +78,9 @@ void DebugDraw::drawScene(const scene::Scene& scene)
 
     if (m_showLights)
     {
-        for (const scene::Light* light : scene.getLights())
+        for (const std::unique_ptr<scene::Light>& light : scene.getLights())
         {
-            if (light)
+            if (light && light->isVisible())
             {
                 drawLight(*light);
             }
@@ -89,9 +90,9 @@ void DebugDraw::drawScene(const scene::Scene& scene)
     if (m_showCameras)
     {
         // the active one is what we look through, its frustum surrounds the viewer
-        for (const scene::Camera* camera : scene.getCameras())
+        for (const std::unique_ptr<scene::Camera>& camera : scene.getCameras())
         {
-            if (camera && camera != scene.getActiveCamera())
+            if (camera && camera.get() != scene.getActiveCamera())
             {
                 drawCamera(*camera, Renderer::getAspect());
             }

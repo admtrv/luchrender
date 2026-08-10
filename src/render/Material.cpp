@@ -21,5 +21,10 @@ void Material::setTexture(const std::string& uniformName, std::shared_ptr<Textur
     m_textures.push_back({std::move(texture), uniformName, unit});
 }
 
+void Material::clearTexture(const std::string& uniformName) noexcept
+{
+    std::erase_if(m_textures, [&](const TextureSlot& slot) { return slot.uniformName == uniformName; });
+}
+
 } // namespace render
 } // namespace BulletRender

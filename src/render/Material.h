@@ -54,6 +54,7 @@ public:
     glm::vec3 getEmissive() const noexcept { return m_emissive.value_or(glm::vec3(0.0f)); }
 
     void setTexture(const std::string& uniformName, std::shared_ptr<Texture2D> texture, unsigned unit);
+    void clearTexture(const std::string& uniformName) noexcept;
     void clearTextures() noexcept { m_textures.clear(); }
     const std::vector<TextureSlot>& getTextures() const noexcept { return m_textures; }
 

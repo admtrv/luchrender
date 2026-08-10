@@ -21,5 +21,14 @@ constexpr glm::vec3 AxisX = Red;
 constexpr glm::vec3 AxisY = Green;
 constexpr glm::vec3 AxisZ = Blue;
 
+// editor greys, dark to light
+constexpr glm::vec3 Grey900 = {0.114f, 0.122f, 0.133f};
+constexpr glm::vec3 Grey800 = {0.153f, 0.161f, 0.173f};
+constexpr glm::vec3 Grey700 = {0.192f, 0.200f, 0.212f};
+constexpr glm::vec3 Grey600 = {0.243f, 0.251f, 0.263f};
+constexpr glm::vec3 Grey500 = {0.302f, 0.310f, 0.322f};
+constexpr glm::vec3 Grey300 = {0.545f, 0.553f, 0.565f};
+constexpr glm::vec3 Grey100 = {0.851f, 0.855f, 0.863f};
+
 } // namespace colors
 } // namespace BulletRender

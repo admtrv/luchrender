@@ -97,6 +97,16 @@ const std::vector<Transform*>& Transform::getChildren() const
     return m_children;
 }
 
+void Transform::setOwner(SceneObject* owner)
+{
+    m_owner = owner;
+}
+
+SceneObject* Transform::getOwner() const
+{
+    return m_owner;
+}
+
 bool Transform::isAncestorOf(const Transform& node) const
 {
     for (const Transform* it = node.m_parent; it != nullptr; it = it->m_parent)

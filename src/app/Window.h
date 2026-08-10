@@ -38,6 +38,9 @@ public:
 
     static void getSize(int& width, int& height);
 
+    static void setVSync(bool enabled);
+    static bool getVSync() { return s_vsync; }
+
     // scroll delta accumulated since last call; returns dy and clears it
     static double consumeScrollDelta();
 
@@ -48,6 +51,7 @@ private:
 
     static GLFWwindow *s_Window;
     static double s_scrollAccum;
+    static bool s_vsync;
 };
 
 } // namespace app

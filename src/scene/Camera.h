@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Named.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -17,10 +19,19 @@ namespace scene {
 #define YAW_LIMIT   89.0f
 #define WORLD_UP    {0.0f, 1.0f, 0.0f}
 
+enum class CameraType {
+    Static,
+    Fly,
+    Orbit
+};
+
 // basic camera
-class Camera {
+class Camera : public Named {
 public:
+    explicit Camera(std::string name = "Camera") : Named(std::move(name)) {}
     virtual ~Camera() = default;
+
+    virtual CameraType getType() const = 0;
 
     virtual glm::mat4 getView() const = 0;
     virtual glm::mat4 getProj(float aspect) const = 0;
@@ -28,6 +39,12 @@ public:
     virtual float getNear() const = 0;
     virtual float getFar() const = 0;
     virtual glm::vec3 getPosition() const = 0;
+
+    virtual void setPosition(const glm::vec3& pos) = 0;
+    virtual void setClipPlanes(float zNear, float zFar) = 0;
+
+    virtual float getFov() const = 0;
+    virtual void setFov(float fovDeg) = 0;
 
     // orientation basis derived from getView() (transpose of upper 3x3)
     virtual glm::vec3 getForward() const;
@@ -46,8 +63,11 @@ public:
             float fovDeg = 60.0f,
             float zNear = 0.1f,
             float zFar = 100.0f)
-        : m_pos(pos), m_target(target), m_up(up), m_fovDeg(fovDeg), m_zNear(zNear), m_zFar(zFar)
+        : Camera("Static Camera"),
+          m_pos(pos), m_target(target), m_up(up), m_fovDeg(fovDeg), m_zNear(zNear), m_zFar(zFar)
     {}
+
+    CameraType getType() const override { return CameraType::Static; }
 
     glm::mat4 getView() const override;
     glm::mat4 getProj(float aspect) const override;
@@ -55,6 +75,15 @@ public:
     float getNear() const override { return m_zNear; }
     float getFar()  const override { return m_zFar; }
     glm::vec3 getPosition() const override { return m_pos; }
+
+    void setPosition(const glm::vec3& pos) override { m_pos = pos; }
+    void setClipPlanes(float zNear, float zFar) override { m_zNear = zNear; m_zFar = zFar; }
+
+    float getFov() const override { return m_fovDeg; }
+    void setFov(float fovDeg) override { m_fovDeg = fovDeg; }
+
+    void setTarget(const glm::vec3& target) { m_target = target; }
+    glm::vec3 getTarget() const { return m_target; }
 
 private:
     glm::vec3 m_pos;
@@ -78,12 +107,23 @@ public:
                        float mouseSensitivity = 0.1f,
                        bool lockCursor = true);
 
+    CameraType getType() const override { return CameraType::Fly; }
+
     glm::mat4 getView() const override;
     glm::mat4 getProj(float aspect) const override;
 
     float getNear() const override { return m_zNear; }
     float getFar()  const override { return m_zFar; }
     glm::vec3 getPosition() const override { return m_pos; }
+
+    void setPosition(const glm::vec3& pos) override { m_pos = pos; }
+    void setClipPlanes(float zNear, float zFar) override { m_zNear = zNear; m_zFar = zFar; }
+
+    float getFov() const override { return m_fovDeg; }
+    void setFov(float fovDeg) override { m_fovDeg = fovDeg; }
+
+    float getSpeed() const { return m_speed; }
+    void setSpeed(float speed) { m_speed = speed; }
 
     void update(GLFWwindow* win, float dt) override;
 
@@ -120,6 +160,8 @@ public:
                          float zNear = 0.1f,
                          float zFar = 1000.0f);
 
+    CameraType getType() const override { return CameraType::Orbit; }
+
     glm::mat4 getView() const override;
     glm::mat4 getProj(float aspect) const override;
     glm::vec3 getPosition() const override;
@@ -127,8 +169,17 @@ public:
     float getNear() const override { return m_zNear; }
     float getFar()  const override { return m_zFar; }
 
+    void setPosition(const glm::vec3& pos) override;
+    void setClipPlanes(float zNear, float zFar) override { m_zNear = zNear; m_zFar = zFar; }
+
+    float getFov() const override { return m_fovDeg; }
+    void setFov(float fovDeg) override { m_fovDeg = fovDeg; }
+
     glm::vec3 getTarget() const { return m_target; }
+    void setTarget(const glm::vec3& target) { m_target = target; }
+
     float getRadius() const { return m_radius; }
+    void setRadius(float radius) { m_radius = radius; }
     bool isMoving() const { return m_moving; }
 
     void update(GLFWwindow* win, float dt) override;

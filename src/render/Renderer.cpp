@@ -63,9 +63,9 @@ static LightUniforms collectLights(const scene::Scene& scene)
 {
     LightUniforms out;
 
-    for (const scene::Light* light : scene.getLights())
+    for (const std::unique_ptr<scene::Light>& light : scene.getLights())
     {
-        if (!light) continue;
+        if (!light || !light->isVisible()) continue;
 
         glm::vec3 weighted = light->getColor() * light->getIntensity();
 
@@ -81,7 +81,7 @@ static LightUniforms collectLights(const scene::Scene& scene)
                 // only first directional wins, rest ignored
                 if (!out.hasDirectional)
                 {
-                    auto* d = static_cast<const scene::DirectionalLight*>(light);
+                    auto* d = static_cast<const scene::DirectionalLight*>(light.get());
                     out.hasDirectional = true;
                     out.dirDirection = d->getDirection();
                     out.dirColor = weighted;
@@ -98,7 +98,7 @@ static LightUniforms collectLights(const scene::Scene& scene)
             {
                 if (out.pointCount < MAX_POINT_LIGHTS)
                 {
-                    auto* p = static_cast<const scene::PointLight*>(light);
+                    auto* p = static_cast<const scene::PointLight*>(light.get());
                     int i = out.pointCount++;
                     out.pointPos[i] = p->getPosition();
                     out.pointColor[i] = weighted;
@@ -110,7 +110,7 @@ static LightUniforms collectLights(const scene::Scene& scene)
             {
                 if (out.spotCount < MAX_SPOT_LIGHTS)
                 {
-                    auto* s = static_cast<const scene::SpotLight*>(light);
+                    auto* s = static_cast<const scene::SpotLight*>(light.get());
                     int i = out.spotCount++;
                     out.spotPos[i] = s->getPosition();
                     out.spotDir[i] = s->getDirection();
@@ -207,8 +207,11 @@ void Renderer::render(const scene::Scene& scene)
     app::Window::getSize(viewportW, viewportH);
     glViewport(0, 0, viewportW, viewportH);
 
-    // render scene to framebuffer only if we have post-passes
-    bool useFramebuffer = !s_post.empty() && s_sceneFbo;
+    // inactive post-pass never resolves framebuffer, so scene goes straight to screen
+    const bool hasActivePost = std::any_of(s_post.begin(), s_post.end(),
+        [](const std::shared_ptr<IRenderPass>& pass) { return pass && pass->isActive(); });
+
+    bool useFramebuffer = hasActivePost && s_sceneFbo;
 
     if (useFramebuffer)
     {
@@ -234,7 +237,10 @@ void Renderer::render(const scene::Scene& scene)
         // PostPass
         for (auto& p : s_post)
         {
-            p->render(scene);
+            if (p->isActive())
+            {
+                p->render(scene);
+            }
         }
     }
 
@@ -252,7 +258,8 @@ static void renderSceneDepthOnly(const scene::Scene& scene, GraphicsShader& shad
 
     for (const auto& object : scene.getObjects())
     {
-        if (!object) continue;
+        // hidden object casts no shadow either, it would give itself away
+        if (!object || !object->isVisible()) continue;
         const scene::Model* model = object->getModel();
         if (!model) continue;
 
@@ -384,7 +391,7 @@ void Renderer::renderBasePass(const scene::Scene& scene)
 
     for (const auto& object : scene.getObjects())
     {
-        if (!object)
+        if (!object || !object->isVisible())
         {
             continue;
         }

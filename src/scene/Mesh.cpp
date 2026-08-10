@@ -8,7 +8,8 @@ namespace BulletRender {
 namespace scene {
 
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned>& indices) {
-    // index count
+    // vertex and index counts
+    m_vertexCount = (unsigned)vertices.size();
     m_indexCount = (unsigned)indices.size();
 
     // create buffers
@@ -61,11 +62,13 @@ Mesh::~Mesh() {
 }
 
 Mesh::Mesh(Mesh&& other) noexcept
-    : m_vao(other.m_vao), m_vbo(other.m_vbo), m_ebo(other.m_ebo), m_indexCount(other.m_indexCount)
+    : m_vao(other.m_vao), m_vbo(other.m_vbo), m_ebo(other.m_ebo),
+      m_vertexCount(other.m_vertexCount), m_indexCount(other.m_indexCount)
 {
     other.m_vao = 0;
     other.m_vbo = 0;
     other.m_ebo = 0;
+    other.m_vertexCount = 0;
     other.m_indexCount = 0;
 }
 
@@ -83,11 +86,13 @@ Mesh& Mesh::operator=(Mesh&& other) noexcept
     m_vao = other.m_vao;
     m_vbo = other.m_vbo;
     m_ebo = other.m_ebo;
+    m_vertexCount = other.m_vertexCount;
     m_indexCount = other.m_indexCount;
 
     other.m_vao = 0;
     other.m_vbo = 0;
     other.m_ebo = 0;
+    other.m_vertexCount = 0;
     other.m_indexCount = 0;
     return *this;
 }

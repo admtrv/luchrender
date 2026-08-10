@@ -16,6 +16,8 @@
 namespace BulletRender {
 namespace scene {
 
+class SceneObject;
+
 // reference frame of operation
 enum class Space {
     Local,
@@ -39,6 +41,10 @@ public:
 
     void addChild(Transform* child, bool keepWorld = true);     // same as child->setParent(this)
     const std::vector<Transform*>& getChildren() const;
+
+    // back reference, lets hierarchy be walked on object level
+    void setOwner(SceneObject* owner);
+    SceneObject* getOwner() const;
 
     // local pose
 
@@ -105,6 +111,7 @@ private:
 
     Transform* m_parent = nullptr;
     std::vector<Transform*> m_children;
+    SceneObject* m_owner = nullptr;
 
     mutable glm::mat4 m_local{1.0f};
     mutable glm::mat4 m_world{1.0f};

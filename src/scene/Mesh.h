@@ -32,11 +32,17 @@ public:
 
     void draw() const;
 
+    // geometry lives on gpu, only counts kept around
+    unsigned getVertexCount() const { return m_vertexCount; }
+    unsigned getIndexCount() const { return m_indexCount; }
+    unsigned getTriangleCount() const { return m_indexCount / 3; }
+
 private:
     unsigned m_vao=0;
     unsigned m_vbo=0;
     unsigned m_ebo=0;
 
+    unsigned m_vertexCount=0;
     unsigned m_indexCount=0;
 };
 

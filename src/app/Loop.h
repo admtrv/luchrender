@@ -26,8 +26,19 @@ public:
 
     void run(const std::function<void(float)>& update);
 
+    // hooks
+    void setBeforeFrame(std::function<void()> callback) { m_beforeFrame = std::move(callback); }
+
+    // zero means unlimited
+    static void setFrameRateLimit(int fps) { s_frameRateLimit = fps; }
+    static int getFrameRateLimit() { return s_frameRateLimit; }
+
 private:
+    static void waitForFrameLimit(double frameStart);
+
     scene::Scene& m_scene;
+    std::function<void()> m_beforeFrame;
+    static int s_frameRateLimit;
 };
 
 } // namespace app

@@ -54,6 +54,7 @@ public:
 
     static FrameBuffer* getSceneFrameBuffer() { return s_sceneFbo.get(); }
     static const RenderConfig& getConfig() { return s_config; }
+    static void setBackgroundColor(const glm::vec4& color) { s_config.backgroundColor = color; }
 
     static float getAspect();
 
