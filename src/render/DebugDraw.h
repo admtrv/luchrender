@@ -12,6 +12,7 @@
 #include "scene/Camera.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <memory>
 
@@ -36,7 +37,17 @@ public:
     void setShowCameras(bool v) { m_showCameras = v; }
     bool getShowCameras() const { return m_showCameras; }
 
+    // primitives
+
+    void drawBox(const glm::vec3 corners[8], const glm::vec3& color);
+    void drawCircle(const glm::vec3& center, const glm::vec3& normal, float radius, const glm::vec3& color, int segments = 24);
+    void drawSphere(const glm::vec3& center, float radius, const glm::vec3& color);
+    void drawSphere(const glm::vec3& center, float radius, const glm::quat& orientation, const glm::vec3& color);
+    void drawArrow(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color);
+    void drawCone(const glm::vec3& apex, const glm::vec3& direction, float length, float angleRad, const glm::vec3& color);
+
 private:
+
     // gizmos
 
     void drawTransform(const scene::Transform& transform);                      // rgb axes
@@ -47,14 +58,6 @@ private:
     void drawDirectionalLight(const scene::DirectionalLight& light);
     void drawPointLight(const scene::PointLight& light);
     void drawSpotLight(const scene::SpotLight& light);
-
-    // primitives
-
-    void drawBox(const glm::vec3 corners[8], const glm::vec3& color);
-    void drawCircle(const glm::vec3& center, const glm::vec3& normal, float radius, const glm::vec3& color, int segments);
-    void drawSphere(const glm::vec3& center, float radius, const glm::vec3& color);
-    void drawArrow(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color);
-    void drawCone(const glm::vec3& apex, const glm::vec3& direction, float length, float angleRad, const glm::vec3& color);
 
     std::shared_ptr<Lines> m_lines;
 

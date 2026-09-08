@@ -5,15 +5,25 @@
 #pragma once
 
 #include "Config.h"
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "utils/Input.h"
 
 #include <string>
-#include <iostream>
+
+struct GLFWwindow;
 
 namespace BulletRender {
 namespace app {
+
+enum class MouseButton {
+    Left,
+    Right,
+    Middle
+};
+
+enum class CursorMode {
+    Normal,     // visible, free to leave the window
+    Captured    // hidden and locked, for looking around
+};
 
 struct WindowConfig {
     int width;
@@ -29,27 +39,43 @@ struct WindowConfig {
 
 class Window {
 public:
+    // lifetime
     static bool init(const WindowConfig& cfg);
     static void shutdown();
+
     static void pollEvents();
     static void swapBuffers();
+
     static bool shouldClose();
     static void setShouldClose(bool value);
 
+    // properties
     static void getSize(int& width, int& height);
+    static bool isHovered();
 
     static void setVSync(bool enabled);
     static bool getVSync() { return s_vsync; }
 
-    // scroll delta accumulated since last call; returns dy and clears it
+    // keyboard
+    static bool isKeyDown(utils::InputKey key);
+
+    // mouse
+    static bool isMouseDown(MouseButton button);
+    static void getCursorPos(double& x, double& y);
+
+    static void setCursorMode(CursorMode mode);
+    static CursorMode getCursorMode();
+
+    // scroll delta accumulated since last call, returns dy and clears it
     static double consumeScrollDelta();
 
-    static GLFWwindow *get();
-
 private:
+    friend class Loop;   // imgui binds to the raw handle
+
+    static GLFWwindow* get();
     static void scrollCallback(GLFWwindow* w, double xoffset, double yoffset);
 
-    static GLFWwindow *s_Window;
+    static GLFWwindow* s_Window;
     static double s_scrollAccum;
     static bool s_vsync;
 };

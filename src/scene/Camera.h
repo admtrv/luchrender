@@ -6,12 +6,12 @@
 
 #include "Named.h"
 
+#include "app/Window.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <cmath>
-
-struct GLFWwindow;
 
 namespace BulletRender {
 namespace scene {
@@ -51,7 +51,7 @@ public:
     virtual glm::vec3 getRight() const;
     virtual glm::vec3 getUp() const;
 
-    virtual void update(GLFWwindow* win, float dt) {}
+    virtual void update(float dt) {}
 };
 
 // static camera (position ->->-> target)
@@ -125,14 +125,12 @@ public:
     float getSpeed() const { return m_speed; }
     void setSpeed(float speed) { m_speed = speed; }
 
-    void update(GLFWwindow* win, float dt) override;
+    void update(float dt) override;
 
 private:
-    enum class CursorMode {Locked, Free};
-
     glm::vec3 forwardDir() const;
-    void applyCursorMode(GLFWwindow* win);
-    void toggleCursorMode(GLFWwindow* win);
+    void applyCursorMode();
+    void toggleCursorMode();
 
     glm::vec3 m_pos;
     float m_yaw;
@@ -143,7 +141,7 @@ private:
     float m_zFar;
 
     float m_sensitivity;
-    CursorMode m_mode;
+    app::CursorMode m_mode;
     bool m_mouseInit;
     double m_lastX;
     double m_lastY;
@@ -182,7 +180,7 @@ public:
     void setRadius(float radius) { m_radius = radius; }
     bool isMoving() const { return m_moving; }
 
-    void update(GLFWwindow* win, float dt) override;
+    void update(float dt) override;
 
 private:
     glm::vec3 m_target;

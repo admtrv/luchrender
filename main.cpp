@@ -102,7 +102,7 @@ int main()
     loop.setBeforeFrame([&] { editor.beforeFrame(); });
     loop.run(
         [&](float dt) {
-            input.update(app::Window::get());
+            input.update();
 
             editor.draw(dt);
 
@@ -110,7 +110,7 @@ int main()
             scene::Camera* camera = scene.getActiveCamera();
             if (camera != nullptr && !editor.wantsInput())
             {
-                camera->update(app::Window::get(), dt);
+                camera->update(dt);
             }
 
             if (editor.getShowDebug())

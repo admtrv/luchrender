@@ -4,7 +4,10 @@
 
 #include "Window.h"
 
+#include <GLFW/glfw3.h>
+
 #include <cstdlib>
+#include <iostream>
 
 // Windows: exported symbols pick the discrete GPU on hybrid systems
 #ifdef _WIN32
@@ -125,6 +128,54 @@ void Window::swapBuffers()
 GLFWwindow *Window::get()
 {
     return s_Window;
+}
+
+bool Window::isHovered()
+{
+    return glfwGetWindowAttrib(s_Window, GLFW_HOVERED) != 0;
+}
+
+bool Window::isKeyDown(utils::InputKey key)
+{
+    return glfwGetKey(s_Window, static_cast<int>(key)) == GLFW_PRESS;
+}
+
+bool Window::isMouseDown(MouseButton button)
+{
+    int glfwButton = GLFW_MOUSE_BUTTON_LEFT;
+
+    switch (button)
+    {
+        case MouseButton::Right:  glfwButton = GLFW_MOUSE_BUTTON_RIGHT;  break;
+        case MouseButton::Middle: glfwButton = GLFW_MOUSE_BUTTON_MIDDLE; break;
+        default: break;
+    }
+
+    return glfwGetMouseButton(s_Window, glfwButton) == GLFW_PRESS;
+}
+
+void Window::getCursorPos(double& x, double& y)
+{
+    glfwGetCursorPos(s_Window, &x, &y);
+}
+
+void Window::setCursorMode(CursorMode mode)
+{
+    const bool captured = mode == CursorMode::Captured;
+
+    glfwSetInputMode(s_Window, GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+    // raw motion skips the desktop acceleration curve, only meaningful while captured
+    if (glfwRawMouseMotionSupported())
+    {
+        glfwSetInputMode(s_Window, GLFW_RAW_MOUSE_MOTION, captured ? GLFW_TRUE : GLFW_FALSE);
+    }
+}
+
+CursorMode Window::getCursorMode()
+{
+    return glfwGetInputMode(s_Window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED
+         ? CursorMode::Captured : CursorMode::Normal;
 }
 
 void Window::getSize(int& width, int& height)

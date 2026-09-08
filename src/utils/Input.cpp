@@ -4,78 +4,39 @@
 
 #include "Input.h"
 
+#include "app/Window.h"
+
 namespace BulletRender {
 namespace utils {
 
-void Input::update(GLFWwindow* window)
+void Input::update()
 {
-    if (!window)
+    for (const auto& [key, callback] : m_callbacks)
     {
-        return;
-    }
+        const bool isPressed = app::Window::isKeyDown(static_cast<InputKey>(key));
+        const bool wasPressed = m_keyState[key];
 
-    for (const auto& pair : m_callbacks)
-    {
-        int glfwKey = pair.first;
-        const InputCallback& callback = pair.second;
-
-        bool isPressed = glfwGetKey(window, glfwKey) == GLFW_PRESS;
-        bool wasPressed = m_keyState[glfwKey];
-
-        // trigger callback on key press (transition from not pressed to pressed)
+        // the callback fires on the press itself, not while the key is held
         if (isPressed && !wasPressed)
         {
             callback();
         }
 
-        m_keyState[glfwKey] = isPressed;
+        m_keyState[key] = isPressed;
     }
 }
 
 void Input::bindKey(InputKey key, const InputCallback& callback)
 {
-    int glfwKey = glfwKeyFromInputKey(key);
+    const int glfwKey = static_cast<int>(key);
+
     m_callbacks[glfwKey] = callback;
     m_keyState[glfwKey] = false;
 }
 
 void Input::unbindKey(InputKey key)
 {
-    int glfwKey = glfwKeyFromInputKey(key);
-    m_callbacks.erase(glfwKey);
-}
-
-int Input::glfwKeyFromInputKey(InputKey key) const
-{
-    switch (key)
-    {
-        case InputKey::SPACE:
-            return GLFW_KEY_SPACE;
-        case InputKey::W:
-            return GLFW_KEY_W;
-        case InputKey::A:
-            return GLFW_KEY_A;
-        case InputKey::S:
-            return GLFW_KEY_S;
-        case InputKey::D:
-            return GLFW_KEY_D;
-        case InputKey::C:
-            return GLFW_KEY_C;
-        case InputKey::G:
-            return GLFW_KEY_G;
-        case InputKey::UP:
-            return GLFW_KEY_UP;
-        case InputKey::DOWN:
-            return GLFW_KEY_DOWN;
-        case InputKey::LEFT:
-            return GLFW_KEY_LEFT;
-        case InputKey::RIGHT:
-            return GLFW_KEY_RIGHT;
-        case InputKey::ESCAPE:
-            return GLFW_KEY_ESCAPE;
-        default:
-            return GLFW_KEY_UNKNOWN;
-    }
+    m_callbacks.erase(static_cast<int>(key));
 }
 
 } // namespace utils

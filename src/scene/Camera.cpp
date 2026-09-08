@@ -6,7 +6,6 @@
 
 #include "app/Window.h"
 
-#include <GLFW/glfw3.h>
 
 namespace BulletRender {
 namespace scene {
@@ -64,7 +63,7 @@ FlyCamera::FlyCamera(glm::vec3 pos,
     , m_zNear(zNear)
     , m_zFar(zFar)
     , m_sensitivity(mouseSensitivity)
-    , m_mode(lockCursor ? CursorMode::Locked : CursorMode::Free)
+    , m_mode(lockCursor ? app::CursorMode::Captured : app::CursorMode::Normal)
     , m_mouseInit(false)
     , m_lastX(0.0)
     , m_lastY(0.0)
@@ -94,75 +93,50 @@ glm::mat4 FlyCamera::getProj(float aspect) const
     return glm::perspective(glm::radians(m_fovDeg), aspect > 0.0f ? aspect : 1.0f, m_zNear, m_zFar);
 }
 
-void FlyCamera::applyCursorMode(GLFWwindow* win)
+void FlyCamera::applyCursorMode()
 {
-    if (m_mode == CursorMode::Locked)
-    {
-        glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        if (glfwRawMouseMotionSupported())
-        {
-            glfwSetInputMode(win, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-        }
-    }
-    else
-    {
-        glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        if (glfwRawMouseMotionSupported())
-        {
-            glfwSetInputMode(win, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
-        }
-    }
+    app::Window::setCursorMode(m_mode);
 
+    // the cursor jumped, so the next frame starts a fresh delta
     m_mouseInit = false;
 }
 
-void FlyCamera::toggleCursorMode(GLFWwindow* win)
+void FlyCamera::toggleCursorMode()
 {
-    if (m_mode == CursorMode::Locked)
-    {
-        m_mode = CursorMode::Free;
-    }
-    else
-    {
-        m_mode = CursorMode::Locked;
-    }
+    m_mode = (m_mode == app::CursorMode::Captured) ? app::CursorMode::Normal : app::CursorMode::Captured;
 
-    applyCursorMode(win);
+    applyCursorMode();
 }
 
-void FlyCamera::update(GLFWwindow* win, float dt)
+void FlyCamera::update(float dt)
 {
-    // start state
+    // something else may have changed the cursor, put it back the way this camera wants it
+    if (app::Window::getCursorMode() != m_mode)
     {
-        const int want = (m_mode == CursorMode::Locked) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
-        const int now  = glfwGetInputMode(win, GLFW_CURSOR);
-        if (now != want)
-        {
-            applyCursorMode(win);
-        }
+        applyCursorMode();
     }
 
-    // toggle cursor mode
-    const int toggleState = glfwGetKey(win, GLFW_KEY_F1);
-    if (toggleState == GLFW_PRESS && !m_prevTogglePressed)
+    const bool togglePressed = app::Window::isKeyDown(utils::InputKey::F1);
+
+    if (togglePressed && !m_prevTogglePressed)
     {
-        toggleCursorMode(win);
+        toggleCursorMode();
     }
 
-    m_prevTogglePressed = (toggleState == GLFW_PRESS);
+    m_prevTogglePressed = togglePressed;
 
-    if (!glfwGetWindowAttrib(win, GLFW_HOVERED))
+    if (!app::Window::isHovered())
     {
         m_mouseInit = false;
         return;
     }
 
     // camera rotation
-    if (m_mode == CursorMode::Locked)
+    if (m_mode == app::CursorMode::Captured)
     {
         double x;
         double y;
-        glfwGetCursorPos(win, &x, &y);
+        app::Window::getCursorPos(x, y);
 
         if (!m_mouseInit)
         {
@@ -202,22 +176,22 @@ void FlyCamera::update(GLFWwindow* win, float dt)
     const glm::vec3 fwd = forwardDir();
     const glm::vec3 right = glm::normalize(glm::cross(fwd, glm::vec3 WORLD_UP));
 
-    const bool boost = glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(win, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+    const bool boost = app::Window::isKeyDown(utils::InputKey::LEFT_SHIFT) || app::Window::isKeyDown(utils::InputKey::RIGHT_SHIFT);
     const float step = m_speed * (boost ? 4.0f : 1.0f) * dt;
 
-    if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS)
+    if (app::Window::isKeyDown(utils::InputKey::W))
     {
         m_pos += fwd   * step;
     }
-    if (glfwGetKey(win, GLFW_KEY_S) == GLFW_PRESS)
+    if (app::Window::isKeyDown(utils::InputKey::S))
     {
         m_pos -= fwd   * step;
     }
-    if (glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS)
+    if (app::Window::isKeyDown(utils::InputKey::A))
     {
         m_pos -= right * step;
     }
-    if (glfwGetKey(win, GLFW_KEY_D) == GLFW_PRESS)
+    if (app::Window::isKeyDown(utils::InputKey::D))
     {
         m_pos += right * step;
     }
@@ -256,12 +230,13 @@ glm::mat4 OrbitCamera::getProj(float aspect) const
     return glm::perspective(glm::radians(m_fovDeg), aspect, m_zNear, m_zFar);
 }
 
-void OrbitCamera::update(GLFWwindow* win, float /*dt*/)
+void OrbitCamera::update(float /*dt*/)
 {
-    double x, y;
-    glfwGetCursorPos(win, &x, &y);
+    double x = 0.0;
+    double y = 0.0;
+    app::Window::getCursorPos(x, y);
 
-    bool dragging = glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+    const bool dragging = app::Window::isMouseDown(app::MouseButton::Left);
 
     if (dragging)
     {

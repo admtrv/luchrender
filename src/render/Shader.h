@@ -36,7 +36,7 @@ protected:
 
     // shared helpers for derived shader classes
     static std::string readFile(const std::string& path);
-    static unsigned compileStage(GLenum type, const char* src, const std::string& tag);
+    static unsigned compileStage(unsigned type, const char* src, const std::string& tag);
 
     // attach the given stages, link them into m_id;
     bool linkProgram(std::initializer_list<unsigned> stages);

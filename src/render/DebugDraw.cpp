@@ -17,7 +17,7 @@ constexpr float LENGTH_EPSILON = 1e-6f;     // shorter segments carry no directi
 
 // transform
 constexpr float AXIS_LENGTH = 1.0f;
-constexpr float ARROW_HEAD_RATIO = 0.15f;   // head length relative to whole arrow
+constexpr float ARROW_HEAD_LENGTH = 0.15f;  // same head on every arrow
 constexpr float ARROW_HEAD_ANGLE = 0.3f;    // how wide head opens, radians
 
 // light
@@ -261,13 +261,18 @@ void DebugDraw::drawCircle(const glm::vec3& center, const glm::vec3& normal, flo
 
 void DebugDraw::drawSphere(const glm::vec3& center, float radius, const glm::vec3& color)
 {
+    drawSphere(center, radius, glm::quat(1.0f, 0.0f, 0.0f, 0.0f), color);
+}
+
+void DebugDraw::drawSphere(const glm::vec3& center, float radius, const glm::quat& orientation, const glm::vec3& color)
+{
     // meridians share poles, their normals lie in horizontal plane
     for (int i = 0; i < SPHERE_MERIDIANS; i++)
     {
         const float angle = glm::pi<float>() * float(i) / float(SPHERE_MERIDIANS);
         const glm::vec3 normal(glm::cos(angle), 0.0f, glm::sin(angle));
 
-        drawCircle(center, normal, radius, color, CIRCLE_SEGMENTS);
+        drawCircle(center, orientation * normal, radius, color, CIRCLE_SEGMENTS);
     }
 }
 
@@ -281,14 +286,13 @@ void DebugDraw::drawArrow(const glm::vec3& from, const glm::vec3& to, const glm:
     }
 
     const glm::vec3 dir = delta / length;
-    const float headLength = length * ARROW_HEAD_RATIO;
-    const glm::vec3 base = to - dir * headLength;
+    const glm::vec3 base = to - dir * ARROW_HEAD_LENGTH;
 
     // shaft stops at head, so outline stays readable
     m_lines->addLine(from, base, color);
 
     // head is cone standing on its tip, apex at the far end of arrow
-    drawCone(to, -dir, headLength, ARROW_HEAD_ANGLE, color);
+    drawCone(to, -dir, ARROW_HEAD_LENGTH, ARROW_HEAD_ANGLE, color);
 }
 
 void DebugDraw::drawCone(const glm::vec3& apex, const glm::vec3& direction, float length, float angleRad, const glm::vec3& color)

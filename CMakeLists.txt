@@ -19,7 +19,7 @@ if(SANITIZE)
 endif()
 
 # build library without build files and main.cpp
-set(LIB_NAME ${PROJECT_NAME})
+set(LIB_NAME ${PROJECT_NAME}Lib)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 list(FILTER SOURCES EXCLUDE REGEX ".*/.*build.*/.*")
@@ -33,6 +33,9 @@ list(REMOVE_ITEM SOURCES ${EDITOR_SOURCES})
 # render library
 add_library(${LIB_NAME} STATIC ${SOURCES})
 target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+# the target carries the suffix, the file does not
+set_target_properties(${LIB_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
 # ImGui library
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
@@ -86,7 +89,7 @@ else()
     endif()
 endif()
 
-set(BIN_NAME Demo)
+set(BIN_NAME ${PROJECT_NAME})
 option(BULLET_RENDER_BUILD_APP "build standalone app with local main.cpp" ${_default_app})
 
 if(BULLET_RENDER_BUILD_APP)

@@ -36,7 +36,7 @@ std::string Shader::readFile(const std::string& path)
 }
 
 // compile shader of type
-unsigned Shader::compileStage(GLenum type, const char* src, const std::string& tag)
+unsigned Shader::compileStage(unsigned type, const char* src, const std::string& tag)
 {
     unsigned shader = glCreateShader(type);
     glShaderSource(shader, 1, &src, nullptr);
