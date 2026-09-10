@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Model.h"
+#include "models/Model.h"
 #include "Named.h"
 #include "Transform.h"
 #include "Camera.h"
@@ -23,11 +23,11 @@ namespace scene {
 // draw item
 class SceneObject : public Named {
 public:
-    SceneObject(Model* model = nullptr, std::string name = "Object")
-        : Named(std::move(name)), m_model(model) {}
+    SceneObject(std::shared_ptr<Model> model = nullptr, std::string name = "Object")
+        : Named(std::move(name)), m_model(std::move(model)) {}
 
-    void setModel(Model* model) { m_model = model; }
-    Model* getModel() const { return m_model; }
+    void setModel(std::shared_ptr<Model> model) { m_model = std::move(model); }
+    const std::shared_ptr<Model>& getModel() const { return m_model; }
 
     // hidden objects skipped while drawing
     void setVisible(bool visible) { m_visible = visible; }
@@ -46,7 +46,7 @@ public:
     std::vector<SceneObject*> getChildren() const;
 
 private:
-    Model* m_model;
+    std::shared_ptr<Model> m_model;
     Transform m_transform;
     render::Material m_material;
     bool m_visible = true;
@@ -56,15 +56,8 @@ private:
 // everything single frame needs, owns whole content
 class Scene {
 public:
-    // models, shared between objects
-    Model* addModel(std::unique_ptr<Model> model);
-    Model* loadModel(const std::string& path);
-    void removeModel(size_t index);
-    void clearModels();
-    const std::vector<std::unique_ptr<Model>>& getModels() const { return m_models; }
-
     // objects
-    SceneObject* addObject(Model* model, const std::string& name = "Object");
+    SceneObject* addObject(std::shared_ptr<Model> model, const std::string& name = "Object");
     void removeObject(size_t index);
     void clearObjects() { m_objects.clear(); }
     const std::vector<std::unique_ptr<SceneObject>>& getObjects() const { return m_objects; }
@@ -91,8 +84,7 @@ private:
     Light* pushLight(std::unique_ptr<Light> light);
     Camera* pushCamera(std::unique_ptr<Camera> camera);
 
-    // scene owns everything it holds, editor creates and drops it at runtime
-    std::vector<std::unique_ptr<Model>> m_models;
+    // scene owns objects, lights and cameras, editor creates and drops them at runtime
     std::vector<std::unique_ptr<SceneObject>> m_objects;
     std::vector<std::unique_ptr<Light>> m_lights;
     std::vector<std::unique_ptr<Camera>> m_cameras;

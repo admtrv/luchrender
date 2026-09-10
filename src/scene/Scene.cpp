@@ -45,62 +45,9 @@ std::vector<SceneObject*> SceneObject::getChildren() const
 }
 
 
-Model* Scene::addModel(std::unique_ptr<Model> model)
+SceneObject* Scene::addObject(std::shared_ptr<Model> model, const std::string& name)
 {
-    if (model == nullptr)
-    {
-        return nullptr;
-    }
-
-    Model* raw = model.get();
-    m_models.push_back(std::move(model));
-    return raw;
-}
-
-Model* Scene::loadModel(const std::string& path)
-{
-    auto model = std::make_unique<Model>();
-    if (!model->loadObj(path))
-    {
-        return nullptr;
-    }
-
-    return addModel(std::move(model));
-}
-
-void Scene::removeModel(size_t index)
-{
-    if (index >= m_models.size())
-    {
-        return;
-    }
-
-    // objects would keep pointing at freed geometry, so they lose model first
-    Model* model = m_models[index].get();
-    for (const std::unique_ptr<SceneObject>& object : m_objects)
-    {
-        if (object->getModel() == model)
-        {
-            object->setModel(nullptr);
-        }
-    }
-
-    m_models.erase(m_models.begin() + index);
-}
-
-void Scene::clearModels()
-{
-    for (const std::unique_ptr<SceneObject>& object : m_objects)
-    {
-        object->setModel(nullptr);
-    }
-
-    m_models.clear();
-}
-
-SceneObject* Scene::addObject(Model* model, const std::string& name)
-{
-    m_objects.emplace_back(std::make_unique<SceneObject>(model, name));
+    m_objects.emplace_back(std::make_unique<SceneObject>(std::move(model), name));
     SceneObject* object = m_objects.back().get();
     object->getTransform().setOwner(object);
     return object;

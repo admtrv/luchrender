@@ -7,6 +7,7 @@
 #include "interface/elements/Widgets.h"
 #include "Colors.h"
 #include "render/textures/TextureLoader.h"
+#include "scene/models/ModelLoader.h"
 
 #include "imgui.h"
 
@@ -418,7 +419,7 @@ void Editor::drawModelInspector(scene::SceneObject& object)
         return;
     }
 
-    if (const scene::Model* model = object.getModel())
+    if (const std::shared_ptr<scene::Model>& model = object.getModel())
     {
         const glm::vec3 size = model->getBoundsMax() - model->getBoundsMin();
 
@@ -438,9 +439,9 @@ void Editor::drawModelInspector(scene::SceneObject& object)
     if (loadFromFileField("model", m_modelPath, sizeof(m_modelPath), "path/to/model"))
     {
         // loaded geometry joins scene and goes to selected object
-        if (scene::Model* model = m_scene.loadModel(m_modelPath))
+        if (std::shared_ptr<scene::Model> model = scene::ModelLoader::instance().load(m_modelPath))
         {
-            object.setModel(model);
+            object.setModel(std::move(model));
             m_modelError.clear();
         }
         else

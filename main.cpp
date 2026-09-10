@@ -74,7 +74,7 @@ int main()
     sun->setIntensity(0.8f);
 
     // default cube
-    scene::Model* cubeModel = scene.addModel(std::make_unique<scene::Box>(1.0f, 1.0f, 1.0f));
+    auto cubeModel = std::make_shared<scene::Box>(1.0f, 1.0f, 1.0f);
     scene::SceneObject* cube = scene.addObject(cubeModel, "Cube");
     cube->getMaterial().setShader(shader);
     cube->getTransform().setLocalPosition({0.0f, 0.0f, 0.0f});

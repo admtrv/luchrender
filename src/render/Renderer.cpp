@@ -260,7 +260,7 @@ static void renderSceneDepthOnly(const scene::Scene& scene, GraphicsShader& shad
     {
         // hidden object casts no shadow either, it would give itself away
         if (!object || !object->isVisible()) continue;
-        const scene::Model* model = object->getModel();
+        const scene::Model* model = object->getModel().get();
         if (!model) continue;
 
         shadowShader.setMat4("uModel", object->getTransform().getMatrix());
@@ -396,7 +396,7 @@ void Renderer::renderBasePass(const scene::Scene& scene)
             continue;
         }
 
-        const scene::Model* model = object->getModel();
+        const scene::Model* model = object->getModel().get();
         if (!model)
         {
             continue;

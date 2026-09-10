@@ -288,11 +288,11 @@ void Editor::drawCreateMenu()
     {
         if (ImGui::MenuItem("Box"))
         {
-            spawnObject(m_scene.addModel(std::make_unique<scene::Box>()), "Box");
+            spawnObject(std::make_shared<scene::Box>(), "Box");
         }
         if (ImGui::MenuItem("Sphere"))
         {
-            spawnObject(m_scene.addModel(std::make_unique<scene::Sphere>()), "Sphere");
+            spawnObject(std::make_shared<scene::Sphere>(), "Sphere");
         }
         if (ImGui::MenuItem("Empty"))
         {
@@ -342,9 +342,9 @@ void Editor::drawCreateMenu()
     ImGui::EndPopup();
 }
 
-scene::SceneObject* Editor::spawnObject(scene::Model* model, const std::string& name)
+scene::SceneObject* Editor::spawnObject(std::shared_ptr<scene::Model> model, const std::string& name)
 {
-    scene::SceneObject* object = m_scene.addObject(model, name);
+    scene::SceneObject* object = m_scene.addObject(std::move(model), name);
     object->getMaterial().setShader(m_shader);
 
     m_selection = {SelectionType::Object, m_scene.getObjects().size() - 1};

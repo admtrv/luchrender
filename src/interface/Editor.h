@@ -74,7 +74,7 @@ private:
     void drawObjectNode(scene::SceneObject& object, size_t index, bool last);
     size_t indexOfObject(const scene::SceneObject* object) const;
     void drawCreateMenu();
-    scene::SceneObject* spawnObject(scene::Model* model, const std::string& name);
+    scene::SceneObject* spawnObject(std::shared_ptr<scene::Model> model, const std::string& name);
 
     // screens/Settings.cpp
     void drawSettings(float dt);

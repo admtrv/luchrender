@@ -2,7 +2,9 @@
     <img src="assets/images/BulletRender.png" alt="BulletRender Logo" width="350">
 </p>
 
-Small but complete C/C++ and OpenGL 3D graphics engine. It works as a standalone graphics library that can be plugged into any project that needs rendering, this way it serves as a submodule of the game engine. It can also be used independently as a standalone editor tool.
+Small but complete C/C++ and OpenGL 3D graphics engine. It works as a standalone graphics library that can be plugged into any project that needs rendering, this way it serves as a submodule of the game engine [BulletEngine](https://github.com/admtrv/BulletEngine). It can also be used independently as a standalone editor tool.
+
+Until now it grew on its own, in a vacuum, though always with the game engine in mind. From here it grows alongside it, driven by what the engine turns out to need.
 
 <p align="center">
     <img src="assets/images/Demo.png" alt="Demo Render" width="500">
@@ -39,7 +41,7 @@ Bundled in `external/`:
 ```
 src/
 ├── app/          window and main loop
-├── scene/        scene, objects, cameras, lights
+├── scene/        scene, objects, cameras, lights, models
 ├── render/       renderer, passes, materials, textures
 ├── interface/    editor (only in standalone build)
 └── utils/

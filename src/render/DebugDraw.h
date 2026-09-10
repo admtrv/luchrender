@@ -7,7 +7,7 @@
 #include "passes/Lines.h"
 #include "scene/Scene.h"
 #include "scene/Transform.h"
-#include "scene/Model.h"
+#include "scene/models/Model.h"
 #include "scene/Light.h"
 #include "scene/Camera.h"
 
